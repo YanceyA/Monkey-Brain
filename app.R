@@ -24,10 +24,10 @@ library(here)
 # Load Helper files -------------------------------
 source("figure_helper.R")
 source("table_helper.R")
-source("data_processor.R")
-source("weather_processor.R")
+#source("data_processor.R")
+#source("weather_processor.R")
 
-
+i_am("app.R")
 
 #FONTS
 # font_import()

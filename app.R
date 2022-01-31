@@ -1,6 +1,3 @@
-##### Shiny App for Exploring The Masters Tournament Golf Data #####
-
-
 # Load required packages -------------------------------
 require(shiny)
 require(shinythemes)
@@ -17,7 +14,7 @@ library(ggiraph)
 library(renv)
 library(scales)
 library(extrafont)
-# library(shinydashboard)
+library(here)
 
 #RENV-------------------------------
 # renv::init()
@@ -27,6 +24,9 @@ library(extrafont)
 # Load Helper files -------------------------------
 source("figure_helper.R")
 source("table_helper.R")
+source("data_processor.R")
+source("weather_processor.R")
+
 
 
 #FONTS

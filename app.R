@@ -34,13 +34,13 @@ source("table_helper.R")
 # loadfonts(device = "win")
 
 #Load data and split out cancelled dates
-tt_results <- readr::read_csv("ctta_results_2010-2022.csv") 
+tt_results <- readr::read_csv(here("Data/Master Results","ctta_results_2010-2022.csv")) 
 
 tt_cancelled_dates <- tt_results %>% filter(rider_name == "Cancelled")
 
 tt_results <- tt_results %>% filter(rider_name != "Cancelled") %>% filter(rider_name_2 != "DNF")
 
-weather <- readr::read_csv("tai_tapu_weather2010-2022.csv") %>% dplyr::mutate(date = dmy(date))
+weather <- readr::read_csv(here("Data/Master Results","tai_tapu_weather2010-2022.csv")) %>% dplyr::mutate(date = dmy(date))
 
 #weather <- readr::read_csv("weather_test.csv")
 

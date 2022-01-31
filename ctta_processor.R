@@ -17,6 +17,7 @@ i_am("ctta_processor.R")
 
 #--------Cleaned Results Processor--------------------------
 
+#function to calcualte the speed based from distance and time vector
 speed_fxn <- function(dist, time)
 {
   as_hour <- lubridate::hour(time)+lubridate::minute(time)/60+lubridate::second(time)/3600
@@ -26,6 +27,7 @@ speed_fxn <- function(dist, time)
   return(speed_kph)
 }
 
+#Function to apply the appropriate Season title to each record
 season_fxn <- function(results)
 {
   results_seasoned <- results %>%
@@ -46,6 +48,7 @@ season_fxn <- function(results)
   return(results_seasoned)
 }
 
+#Detailed air density function based on temp, humidity and pressure
 air_density <- function(temp_C, rel_humidity, pressure)
 {
   
@@ -63,16 +66,14 @@ air_density <- function(temp_C, rel_humidity, pressure)
   
 }
 
-#for air density quick calc
+#Air density quick calc
 air_density(21,.70,1002)
 
 
-#Time Data read in
-#ctta_results <- read_csv(here("TT dump/Cleaned Results", "ctta_results.csv")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-ctta_results <- read_xlsx(here("TT dump/Cleaned Results", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+#Master Results Data read in
+ctta_results <- read_xlsx(here("Data/Master Results", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
 
-
-#change time to be HMS format
+#Convert seconds column to time object and overwrite time column
 ctta_results$time <- hms::as_hms(ctta_results$time_sec)
 
 ctta_results$time <- round_hms(hms::as_hms(ctta_results$time), digits = 2)
@@ -96,16 +97,18 @@ ctta_results_pos_0 <- ctta_results %>%
 ctta_results <- full_join(ctta_results_pos_1, ctta_results_pos_0) %>% 
                 mutate(speed = round(speed, digits = 1))
 
+#remove intermediate dataframes
 rm(ctta_results_pos_0 , ctta_results_pos_1 )
 
-#Add season
+#Add season to data
 ctta_results <- season_fxn(ctta_results)
 
-#Write Data to CSV
+#Determine min/max year for file naming
 min_year <-  min(lubridate::year(ctta_results$date))
 max_year <-  max(lubridate::year(ctta_results$date))
 
-write_csv(ctta_results, paste0("ctta_results_",min_year,"-",max_year,".csv"))
+#Write Data to CSV for Shiny program
+write_csv(ctta_results, here("Data/Master Results", paste0("ctta_results_",min_year,"-",max_year,".csv")))
 
 #---------Temperature merge and creation------------
 
@@ -184,17 +187,9 @@ weather_combined_filtered <- weather_combined_filtered %>%
 
 write_csv(weather_combined_filtered, paste0("tai_tapu_weather",min(lubridate::year(weather_combined_filtered$date)),"-",max(lubridate::year(weather_combined_filtered$date)),".csv"))
 
-
-
-
-
-
+#Weather test area
 weather_combined_afternoons <- subset(weather_combined, date(date) == (tai_tapu_dates$date) ) %>% filter(hour(date_hr) > 17 , hour(date_hr) < 20) 
-
 weather_combined_afternoons <- weather_combined %>%  filter(hour(date_hr) > 17 , hour(date_hr) < 20) %>% filter(month(date_hr) != 5, month(date_hr) != 6, month(date_hr) != 7, month(date_hr) != 8, month(date_hr) != 9 )
-
-
-
 S <- ggplot(weather_combined_afternoons, aes(density)) +
                      geom_histogram(binwidth = .005)
 
@@ -211,6 +206,7 @@ mat[mat>4] <- NA  # cut level
 amatch <- rowSums(mat, na.rm = TRUE)>0 # ignore no match
 df$b[amatch] <- df$a[apply(mat[amatch,],1,which.min)]
 write.csv(df, "names_match.csv")
+
 
 #check to see if chch presure is the same as lincoln pressure... pretty good +/-2.0
 pressure_comp <- full_join(pressure_data_lincoln, pressure_data_chch, by = c("date_hr")) %>% mutate(diff = pmsl_h_pa.x - pmsl_h_pa.y)

@@ -12,12 +12,10 @@ library(data.table)
 library(here)
 library(zoo)
 library(ggplot2)
+library(stringdist)
 
-<<<<<<< HEAD
+
 i_am("data_processor.R")
-=======
-i_am("ctta_processor.R")
->>>>>>> e66495b45f0f66acc9da4db115e36f6cba0d3832
 
 #--------Cleaned Results Processor--------------------------
 
@@ -70,13 +68,15 @@ air_density <- function(temp_C, rel_humidity, pressure)
   
 }
 
+
+name_match(ctta_results$rider_name, 2)
+
 #Function for string distance matching for similar names comparison
 #send this a vector of names
-name_match <- function(name_list)
+name_match <- function(name_list, match_level)
 {
-  library(stringdist)
-  
-  a <- name_list %>%  distinct() 
+
+a <- unique(unlist(name_list)) 
 
 b = c(NA) 
 
@@ -86,7 +86,7 @@ mat <- stringdistmatrix(df$a, df$a)
 
 mat[mat==0] <- NA # ignore self
 
-mat[mat>4] <- NA  # cut level
+mat[mat>match_level] <- NA  # cut level
 
 amatch <- rowSums(mat, na.rm = TRUE)>0 # ignore no match
 
@@ -99,7 +99,7 @@ return(df)
 }
 
 #Air density quick calc
-air_density(21,.70,1002)
+air_density(20,.75,1013)
 
 
 #Master Results Data read in

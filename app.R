@@ -2,9 +2,6 @@
 require(shiny)
 require(shinythemes)
 require(DT)
-require(tidyverse)
-require(hms)
-require(lubridate)
 require(bslib)
 require(thematic)
 require(shinyWidgets)
@@ -14,7 +11,21 @@ library(ggiraph)
 library(renv)
 library(scales)
 library(extrafont)
+library(tidyverse)
+library(hms)
+library(lubridate)
+library(magrittr)
+library(vroom)
+library(tidyselect)
+library(janitor)
+library(readxl)
+library(tidytable)
+library(naniar)
+library(data.table)
 library(here)
+library(zoo)
+library(ggplot2)
+library(stringdist)
 
 #RENV-------------------------------
 # renv::init()
@@ -24,7 +35,7 @@ library(here)
 # Load Helper files -------------------------------
 source("figure_helper.R")
 source("table_helper.R")
-#source("data_processor.R")
+source("data_processor.R")
 #source("weather_processor.R")
 
 i_am("app.R")
@@ -34,15 +45,16 @@ i_am("app.R")
 # loadfonts(device = "win")
 
 #Load data and split out cancelled dates
-tt_results <- readr::read_csv(here("Data/Master Results","ctta_results_2010-2022.csv")) 
+ctta_results <- read_xlsx(here("Data/Master Results", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+ctta_roster <- read_csv(here("Data/Master Results", "ctta_roster.csv"))
+
+tt_results <- process_raw_tt_data(results = ctta_results , roster = ctta_roster )
 
 tt_cancelled_dates <- tt_results %>% filter(rider_name == "Cancelled")
 
 tt_results <- tt_results %>% filter(rider_name != "Cancelled") %>% filter(rider_name_2 != "DNF")
 
 weather <- readr::read_csv(here("Data/Master Results","tai_tapu_weather2010-2022.csv")) %>% dplyr::mutate(date = dmy(date))
-
-#weather <- readr::read_csv("weather_test.csv")
 
 #initial selection variables for event page picker, selects the latest date
 event_picker_inital_selection <- tt_results %>% 
@@ -81,11 +93,39 @@ ui <- navbarPage(
                    wellPanel(DTOutput("weather_table" , height = 100 , width = "auto")))),    
 
            fluidRow(
-             column(5,wellPanel( DTOutput("event_results_table", height = 600, width = "auto") )), 
-             column(7,wellPanel( plotOutput("event_fig", height = 600, width = "auto") ),
-             )), 
+             column(5,wellPanel( DTOutput("event_results_table", height = 850, width = "auto") )), 
+             column(7,
+                    wellPanel( plotOutput("event_fig_male", height = 400) ),
+                    wellPanel( plotOutput("event_fig_female", height = 400) ))
+                    ), 
            
-  ),
+          ),
+  
+
+  
+  
+#   tabPanel("Athlete Comparison",
+#            fluidRow( 
+#                column(8, align = "left",
+#                       selectizeInput(inputId = "athlete_name", label = NULL,
+#                                      choices = sort(unique(tt_results$rider_name)),
+#                                      selected = sample(c("Jake Marryatt", "Gary Ferguson", "David Roche", "Michael Vink", "Sharon Prutton",
+#                                                          "Mary Jones", "Reon Nolan", "Darran Humpheson"), 1),
+#                                      multiple = F,
+#                                      options = list(maxOptions = 1500)
+# ))),
+#                 column(5,wellPanel( DTOutput("event_results_table", height = 600, width = "auto") ), 
+# ),
+#    
+#            
+#            fluidRow(
+#                column(5,wellPanel( DTOutput("event_results_table", height = 600, width = "auto") )), 
+#                column(7,wellPanel( plotOutput("event_fig", height = 600, width = "auto") ),
+# )), 
+#            
+# ),
+  
+  
   
   tabPanel("Athlete Records",
            fluidRow(column(4,
@@ -206,12 +246,18 @@ server <- function(input, output, session) {
     validate(need(input$athlete_name, plyr_err_msg1))
     athlete_results_plot(tt_results, athlete = input$athlete_name) })
 
-  # Plot the Event Figure
-  output$event_fig <- renderPlot({
-                 event_results_plot(results = tt_results  , date = input$dates )
+  # Plot the Event Figure for male
+  output$event_fig_male <- renderPlot({
+                 event_results_plot(results = tt_results  , date = input$dates , gender_filter = "male" )
            }) 
   
+  # Plot the Event Figure for female
+  output$event_fig_female <- renderPlot({
+    event_results_plot(results = tt_results  , date = input$dates , gender_filter = "female" )
+  }) 
 
+  
+  
 #Events Page Date Auto Update----------------
   observeEvent(input$season, {
     {
@@ -231,7 +277,7 @@ server <- function(input, output, session) {
                                                                       searching = F,
                                                                       stripeClasses = F, 
                                                                       lengthChange = F,
-                                                                      scrollY = '540px',
+                                                                      scrollY = '800px',
                                                                       scrollCollapse = F,
                                                                       columnDefs = list(list(className = 'dt-center', 
                                                                                   targets = "_all"))),

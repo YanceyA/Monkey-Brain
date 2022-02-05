@@ -25,28 +25,36 @@ athlete_results_plot <- function(results, athlete) {
 }
 
 
-event_results_plot <- function(results, date) {
+event_results_plot <- function(results, date, gender_filter) {
   
   # Filter and Organize primary data frame
   date_filter <- ymd(str_sub(date,1,10))
-  event_tt_results <- results %>% 
+  event_tt_results_filtered <- results %>% 
                       filter(date == date_filter & hour(time) < 2) %>% 
                       mutate(dist_km_char = as.character(dist_km)) %>%
                       dplyr::arrange(dist_km) %>%
                       dplyr::group_by(dist_km) %>% 
                       dplyr::arrange(time, .by_group = TRUE) %>% 
                       dplyr::ungroup() %>% 
-                      mutate(row_order = row_number()) 
+                      mutate(row_order = row_number())
 
-y_max_w_buffer <- max(event_tt_results$time) * 1.1
-y_limits <- c( 0 , y_max_w_buffer)
+
+    event_tt_results_plot <- event_tt_results_filtered %>% filter(gender == gender_filter)
+    event_tt_results_plot <- event_results_ggplot(event_tt_results_plot)
+    return(event_tt_results_plot)
+}
+
+event_results_ggplot <- function(event_results_filtered) {
   
-  event_results_plot <- ggplot(data = event_tt_results, aes( x=reorder(rider_name, row_order), y = time)) + 
+  y_max_w_buffer <- max(event_results_filtered$time) * 1.1
+  y_limits <- c( 0 , y_max_w_buffer)
+  
+  event_results_plot <- ggplot(data = event_results_filtered, aes( x=reorder(rider_name, row_order), y = time)) + 
     geom_point(aes(colour = dist_km_char, size = 4)) +
     geom_segment(aes(x=rider_name, xend=rider_name, y=0, yend=time)) +
     scale_x_discrete(labels = NULL, breaks = NULL) +
     scale_y_time(breaks = scales::breaks_width("5 min"), limits = y_limits) +
-    geom_richtext(  aes(label = paste0("**",rider_name,"**")), fill = "white", size = 5, angle = 90, hjust="top", nudge_y = -50) +
+    geom_richtext(  aes(label = paste0("**",rider_name_abbv,"**")), fill = "white", size = 5, angle = 90, hjust="top", nudge_y = -50) +
     geom_richtext(  aes(label = time), fill = "white",  size = 4, angle = 90,hjust="bottom", nudge_y = +60) +
     guides(size = "none", colour = guide_legend(override.aes = list(size=10))) +
     theme(legend.position = c(0.1 , 0.9),

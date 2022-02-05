@@ -1,23 +1,3 @@
-library(tidyverse)
-library(hms)
-library(lubridate)
-library(magrittr)
-library(vroom)
-library(tidyselect)
-library(janitor)
-library(readxl)
-library(tidytable)
-library(naniar)
-library(data.table)
-library(here)
-library(zoo)
-library(ggplot2)
-library(stringdist)
-
-
-i_am("data_processor.R")
-
-#--------Cleaned Results Processor--------------------------
 
 #function to calcualte the speed based from distance and time vector
 speed_fxn <- function(dist, time)
@@ -68,90 +48,82 @@ air_density <- function(temp_C, rel_humidity, pressure)
   
 }
 
-
-name_match(ctta_results$rider_name, 2)
-
-#Function for string distance matching for similar names comparison
-#send this a vector of names
-name_match <- function(name_list, match_level)
-{
-
-a <- unique(unlist(name_list)) 
-
-b = c(NA) 
-
-df = data.frame(a,b, stringsAsFactors = FALSE)
-
-mat <- stringdistmatrix(df$a, df$a)
-
-mat[mat==0] <- NA # ignore self
-
-mat[mat>match_level] <- NA  # cut level
-
-amatch <- rowSums(mat, na.rm = TRUE)>0 # ignore no match
-
-df$b[amatch] <- df$a[apply(mat[amatch,],1,which.min)]
-
-return(df)
-
-#write.csv(df, "names_match.csv")
-
-}
-
 #Air density quick calc
 air_density(20,.75,1013)
 
-
-#Master Results Data read in
-ctta_results <- read_xlsx(here("Data/Master Results", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-
+process_raw_tt_data <- function(results , roster) 
+{
 #Convert seconds column to time object and overwrite time column
-ctta_results$time <- hms::as_hms(ctta_results$time_sec)
+results$time <- hms::as_hms(results$time_sec)
 
-ctta_results$time <- round_hms(hms::as_hms(ctta_results$time), digits = 2)
+results$time <- round_hms(hms::as_hms(results$time), digits = 1)
 
 #calculate speeds if speed = 0 , i.e. speed was not recorded in source data
-ctta_results <- ctta_results %>% 
+results <- results %>% 
                 mutate(speed = case_when(speed_bit == 0 ~ speed_fxn(dist_km , time),
                                                           TRUE ~ speed))
 
 #split and remerge data to add positions
-ctta_results_pos_1 <- ctta_results %>% 
+results_pos_1 <- results %>% 
                       dplyr::filter(position_bit == 1) 
 
-ctta_results_pos_0 <- ctta_results %>%
+results_pos_0 <- results %>%
   dplyr::filter(position_bit == 0) %>% 
   arrange(date, dist_km, desc(speed)) %>% 
   group_by(date, dist_km, event) %>% 
   mutate(position =  1:n()) %>% 
   ungroup() 
 
-ctta_results <- full_join(ctta_results_pos_1, ctta_results_pos_0) %>% 
+results <- full_join(results_pos_1, results_pos_0) %>% 
                 mutate(speed = round(speed, digits = 1))
 
 #remove intermediate dataframes
-rm(ctta_results_pos_0 , ctta_results_pos_1 )
+rm(results_pos_0 , results_pos_1 )
 
 #Add season to data
-ctta_results <- season_fxn(ctta_results)
+results <- season_fxn(results)
+
+#add gender and age group to results, taken from roster
+results <- left_join(results, roster, by= "rider_name") %>% dplyr::mutate( rider_name_abbv = paste0(rider_name_first," ",str_sub(rider_name_last , 1 , 1),".") )
 
 #Determine min/max year for file naming
-min_year <-  min(lubridate::year(ctta_results$date))
-max_year <-  max(lubridate::year(ctta_results$date))
+min_year <-  min(lubridate::year(results$date))
+max_year <-  max(lubridate::year(results$date))
 
 #Write Data to CSV for Shiny program
-write_csv(ctta_results, here("Data/Master Results", paste0("ctta_results_",min_year,"-",max_year,".csv")))
+write_csv(results, here("Data/Master Results", paste0("ctta_results_",min_year,"-",max_year,".csv")))
+
+return(results)
+}
+
+#####Name Match code deactivated
+
+#Function for string distance matching for similar names comparison
+#match_level = 1 strict (1char diff) / 5 loose. 2-3 best setting 
+name_match <- function(name_list, match_level)
+{
+  
+  a <- unique(unlist(name_list)) 
+  
+  b = c(NA) 
+  
+  df = data.frame(a,b, stringsAsFactors = FALSE)
+  
+  mat <- stringdistmatrix(df$a, df$a)
+  
+  mat[mat==0] <- NA # ignore self
+  
+  mat[mat>match_level] <- NA  # cut level
+  
+  amatch <- rowSums(mat, na.rm = TRUE)>0 # ignore no match
+  
+  df$b[amatch] <- df$a[apply(mat[amatch,],1,which.min)]
+  
+  return(df)
+  
+}
 
 #String distance matching for similar names comparison---------------
-
-
-
-
-
-
-
-
-
-
-
-
+    # match_level <- 2
+    # matched_names <- name_match(ctta_results$rider_name, match_level) %>%  filter(!is.na(b)) %>% arrange(a)
+    # write.csv(matched_names, here("Data/Misc", paste0("matched_names_level_",match_level,".csv")))

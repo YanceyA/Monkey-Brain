@@ -28,6 +28,8 @@ event_results <- function(results, date) {
     dplyr::select(position, rider_name, dist_km, time, speed) %>%
     dplyr::rename(!!header) 
   
+  # tbl_oi <- tbl_oi %>% dplyr::mutate(Time = format(Time , '%M:%S'))
+  
   return(tbl_oi)
 }
 

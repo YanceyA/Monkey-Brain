@@ -25,41 +25,72 @@ athlete_results_plot <- function(results, athlete) {
 }
 
 
-event_results_plot <- function(results, date, gender_filter) {
+event_results_plot <- function(results, date, gender_filter, dist) {
   
   # Filter and Organize primary data frame
   date_filter <- ymd(str_sub(date,1,10))
   event_tt_results_filtered <- results %>% 
                       filter(date == date_filter & hour(time) < 2) %>% 
+                      # filter(dist_km == dist) %>% 
                       mutate(dist_km_char = as.character(dist_km)) %>%
                       dplyr::arrange(dist_km) %>%
                       dplyr::group_by(dist_km) %>% 
                       dplyr::arrange(time, .by_group = TRUE) %>% 
                       dplyr::ungroup() %>% 
-                      mutate(row_order = row_number())
+                      mutate(row_order = row_number()) %>% 
+                      mutate(rider_name = as.factor(rider_name) %>% fct_reorder(time, min))
 
-
+  if (gender_filter != "both") {
     event_tt_results_plot <- event_tt_results_filtered %>% filter(gender == gender_filter)
-    event_tt_results_plot <- event_results_ggplot(event_tt_results_plot)
+  }
+    
+    # event_tt_results_plot <- event_results_ggplot(event_tt_results_plot)
+    
+    event_tt_results_plot <-event_results_ggplot_lolipop(event_tt_results_plot)
     return(event_tt_results_plot)
 }
 
-event_results_ggplot <- function(event_results_filtered) {
+# event_results_ggplot <- function(event_results_filtered) {
+#   
+#   y_max_w_buffer <- max(event_results_filtered$time) * 1.05
+#   y_min_w_buffer <- min(event_results_filtered$time) * 0.8
+#   y_limits <- c( y_min_w_buffer , y_max_w_buffer)
+#   
+#   event_results_plot <- ggplot(data = event_results_filtered, aes( x=rider_name_abbv, y = time)) + 
+#     geom_point(aes(colour = dist_km_char, size = 4)) +
+#     geom_segment(aes(x=rider_name_abbv, xend=rider_name_abbv, y=0, yend=time)) +
+#     scale_x_discrete(labels = NULL, breaks = NULL) +
+#     scale_y_time(breaks = scales::breaks_width("2 min"), limits = y_limits) +  
+#     geom_richtext(  aes(label = paste0(time," ",rider_name_abbv)), fill = "white", size = 5, angle = 90, hjust="top", nudge_y = -50) +
+#     # geom_richtext(  aes(label = time), fill = "white",  size = 4, angle = 90,hjust="bottom", nudge_y = +60) +
+#     guides(size = "none", colour = guide_legend(override.aes = list(size=10))) +
+#     theme(legend.position = c(0.1 , 0.9),
+#           legend.background = element_rect(fill = "white", color = "black")) +
+#     labs(title = NULL , x = NULL, y = NULL, color = "Distance (km)")
+#   
+#   return(event_results_plot)
+# }
+
+event_results_ggplot_lolipop <- function(event_results_filtered) {
   
-  y_max_w_buffer <- max(event_results_filtered$time) * 1.1
-  y_limits <- c( 0 , y_max_w_buffer)
+  y_max_w_buffer <- max(event_results_filtered$time) 
+  y_min_w_buffer <- min(event_results_filtered$time)
+  y_limits <- c( y_min_w_buffer , y_max_w_buffer)
   
-  event_results_plot <- ggplot(data = event_results_filtered, aes( x=reorder(rider_name, row_order), y = time)) + 
-    geom_point(aes(colour = dist_km_char, size = 4)) +
-    geom_segment(aes(x=rider_name, xend=rider_name, y=0, yend=time)) +
-    scale_x_discrete(labels = NULL, breaks = NULL) +
-    scale_y_time(breaks = scales::breaks_width("5 min"), limits = y_limits) +
-    geom_richtext(  aes(label = paste0("**",rider_name_abbv,"**")), fill = "white", size = 5, angle = 90, hjust="top", nudge_y = -50) +
-    geom_richtext(  aes(label = time), fill = "white",  size = 4, angle = 90,hjust="bottom", nudge_y = +60) +
-    guides(size = "none", colour = guide_legend(override.aes = list(size=10))) +
-    theme(legend.position = c(0.1 , 0.9),
-          legend.background = element_rect(fill = "white", color = "black")) +
-    labs(title = NULL , x = NULL, y = NULL, color = "Distance (km)")
-  
+  event_results_plot <- event_results_filtered %>% 
+    ggplot(aes(x = rider_name, y = time)) +
+    geom_segment(aes(x = rider_name, xend = rider_name, y = y_min_w_buffer, yend = time, colour = dist_km_char), size = 1) + 
+    geom_point(aes(colour = dist_km_char), size = 4) +
+    rotate_x_text(45)+
+    scale_y_time(breaks = scales::breaks_width("1 min"), limits = y_limits) +
+    guides(size = "none", colour = guide_legend(override.aes = list(size=10)))+
+    labs(title = NULL , x = NULL, y = NULL, color = "Distance (km)") +
+    theme(axis.text = element_text(size = 12 , face="bold"),
+          panel.grid.major.y = element_line(color = "red",
+                                            size = 0.5,
+                                            linetype = "dashed"))+
+    scale_color_manual(values=c("red3", "blue", "green"))
+
   return(event_results_plot)
 }
+

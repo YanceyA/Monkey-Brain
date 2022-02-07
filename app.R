@@ -26,6 +26,7 @@ library(here)
 library(zoo)
 library(ggplot2)
 library(stringdist)
+library(ggpubr)
 
 #RENV-------------------------------
 # renv::init()
@@ -248,14 +249,18 @@ server <- function(input, output, session) {
 
   # Plot the Event Figure for male
   output$event_fig_male <- renderPlot({
-                 event_results_plot(results = tt_results  , date = input$dates , gender_filter = "male" )
-           }) 
+    event_results_plot(results = tt_results  , date = input$dates , gender_filter = "male" , dist = 16)
+  }) 
   
   # Plot the Event Figure for female
   output$event_fig_female <- renderPlot({
-    event_results_plot(results = tt_results  , date = input$dates , gender_filter = "female" )
+    event_results_plot(results = tt_results  , date = input$dates , gender_filter = "female" , dist = 16 )
   }) 
 
+  # Plot the Event Figure for 8km
+  output$event_fig_8km <- renderPlot({
+    event_results_plot(results = tt_results  , date = input$dates , gender_filter = "both" , dist = 8 )
+  }) 
   
   
 #Events Page Date Auto Update----------------

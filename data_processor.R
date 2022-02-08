@@ -49,7 +49,7 @@ air_density <- function(temp_C, rel_humidity, pressure)
 }
 
 #Air density quick calc
-air_density(20,.75,1013)
+air_density(18,.80,1018)
 
 process_raw_tt_data <- function(results , roster) 
 {

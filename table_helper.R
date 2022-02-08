@@ -55,6 +55,27 @@ weather_results <- function(weather, date) {
 }
 
 
+leaderboard_table <- function(results, gender, dist, bike_type) {
+  
+  #Output table names
+  header <- c( "Date" = "date" , "Time" = "time" , "Speed (Kph)" = "speed" , "Athlete" = "rider_name")
+  
+  tbl_oi <- results %>%
+    dplyr::filter(gender == gender_filter) %>% 
+    dplyr::filter(dist_km = dist) %>% 
+    dplyr::filter(bike == bike_type) %>%
+    dplyr::group_by(ride_name) %>%
+    dplyr::arrange(time) %>% 
+    dplyr::slice(1L) %>% 
+    dplyr::select(date, time, rider_name, speed) %>%
+    # mutate(date = format(date, "%B %e, %Y")) %>% 
+    dplyr::rename(!!header) 
+  
+  return(tbl_oi)
+}
+
+
+
 # 
 # date_temp <- dmy(23112021)
 # 

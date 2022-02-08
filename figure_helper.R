@@ -81,11 +81,12 @@ event_results_ggplot_lolipop <- function(event_results_filtered) {
     ggplot(aes(x = rider_name, y = time)) +
     geom_segment(aes(x = rider_name, xend = rider_name, y = y_min_w_buffer, yend = time, colour = dist_km_char), size = 1) + 
     geom_point(aes(colour = dist_km_char), size = 4) +
-    rotate_x_text(45)+
+    # rotate_x_text(45)+
     scale_y_time(breaks = scales::breaks_width("1 min"), limits = y_limits) +
     guides(size = "none", colour = guide_legend(override.aes = list(size=10)))+
     labs(title = NULL , x = NULL, y = NULL, color = "Distance (km)") +
     theme(axis.text = element_text(size = 12 , face="bold"),
+          axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1),
           panel.grid.major.y = element_line(color = "red",
                                             size = 0.5,
                                             linetype = "dashed"))+

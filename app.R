@@ -101,10 +101,7 @@ ui <- navbarPage(
                     ), 
            
           ),
-  
 
-  
-  
 #   tabPanel("Athlete Comparison",
 #            fluidRow( 
 #                column(8, align = "left",
@@ -125,8 +122,6 @@ ui <- navbarPage(
 # )), 
 #            
 # ),
-  
-  
   
   tabPanel("Athlete Records",
            fluidRow(column(4,
@@ -152,6 +147,15 @@ ui <- navbarPage(
                     tags$head(tags$style(HTML(".shiny-output-error-validation"))),
                     wellPanel(fluidRow(column(12, plotlyOutput("athlete_fig", height = 800))))))),
       
+tabPanel("Leaderboards",
+         fluidRow(
+           column(4,wellPanel(DTOutput("leaderboard_table_male" , height = 800 , width = "auto") )),
+           
+           
+           column(4,wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") ))
+           
+         )),
+
 
   # About Tab ------------------------------------------------
     tabPanel("About", icon = icon("bars"),
@@ -288,6 +292,37 @@ server <- function(input, output, session) {
                                                                                   targets = "_all"))),
                                                        rownames = F,
                                                        selection = 'none') })
+  
+  event_trns_male <- reactive({ leaderboard_table(tt_results, "male" , 16, "TT") })
+  
+  output$leaderboard_table_male <- renderDT({ datatable(event_trns_male(), 
+                                                     options = list(info = F,
+                                                                    paging = F,
+                                                                    searching = F,
+                                                                    stripeClasses = F, 
+                                                                    lengthChange = F,
+                                                                    scrollY = '750px',
+                                                                    scrollCollapse = F,
+                                                                    columnDefs = list(list(className = 'dt-center', 
+                                                                                           targets = "_all"))),
+                                                     rownames = F,
+                                                     selection = 'none') })  
+  
+  event_trns_female <- reactive({ leaderboard_table(tt_results, "female" , 16, "TT") })
+  
+  output$leaderboard_table_female <- renderDT({ datatable(event_trns_female(), 
+                                                        options = list(info = F,
+                                                                       paging = F,
+                                                                       searching = F,
+                                                                       stripeClasses = F, 
+                                                                       lengthChange = F,
+                                                                       scrollY = '750px',
+                                                                       scrollCollapse = F,
+                                                                       columnDefs = list(list(className = 'dt-center', 
+                                                                                              targets = "_all"))),
+                                                        rownames = F,
+                                                        selection = 'none') })
+  
   
   
   weather_trns <- reactive({ weather_results(weather, date = input$dates) })

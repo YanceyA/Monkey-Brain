@@ -55,21 +55,26 @@ weather_results <- function(weather, date) {
 }
 
 
-leaderboard_table <- function(results, gender, dist, bike_type) {
+leaderboard_table <- function(results, gender_filter, dist_filter, bike_type_filter) {
   
   #Output table names
-  header <- c( "Date" = "date" , "Time" = "time" , "Speed (Kph)" = "speed" , "Athlete" = "rider_name")
+  header <- c( "Date" = "date" , "Time" = "time" , "Speed (Kph)" = "speed" , "Athlete" = "rider_name", "Place" = "position")
   
-  tbl_oi <- results %>%
+  tbl_oi <- results %>% 
     dplyr::filter(gender == gender_filter) %>% 
-    dplyr::filter(dist_km = dist) %>% 
-    dplyr::filter(bike == bike_type) %>%
-    dplyr::group_by(ride_name) %>%
+    dplyr::filter(dist_km == dist_filter) %>% 
+    dplyr::filter(bike == bike_type_filter) %>%
+    dplyr::filter(rider_name_2 != "DNF") %>% 
+    dplyr::filter(rider_name != "Cancelled") %>% 
+    dplyr::group_by(rider_name) %>%
     dplyr::arrange(time) %>% 
     dplyr::slice(1L) %>% 
-    dplyr::select(date, time, rider_name, speed) %>%
-    # mutate(date = format(date, "%B %e, %Y")) %>% 
-    dplyr::rename(!!header) 
+    dplyr::ungroup() %>% 
+    dplyr::arrange(time) %>% 
+    mutate(position = row_number()) %>% 
+    mutate(date = format(date, "%B %e, %Y")) %>%
+    dplyr::select(position, rider_name, date, time, speed) %>% 
+    dplyr::rename(!!header)
   
   return(tbl_oi)
 }

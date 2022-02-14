@@ -155,10 +155,14 @@ ui <- navbarPage(
       
 tabPanel("Leaderboards",
          fluidRow(
-           column(5, h1("Male LeaderBoard"), wellPanel(DTOutput("leaderboard_table_male" , height = 800 , width = "auto") )),
+           column(5, 
+                  p(tags$b('Male Leaderboard:'), style = 'text-align:center; margin-bottom: 5px; font-size:140%;'), 
+                  wellPanel(DTOutput("leaderboard_table_male" , height = 800 , width = "auto") )),
            
            # column(4,wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") )),
-           column(5 , h1("Female LeaderBoard"), wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") )),
+           column(5, 
+                  p(tags$b('Female Leaderboard:'), style = 'text-align:center; margin-bottom: 5px; font-size:140%;'),
+                  wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") )),
            
            column(2, fluidRow( pickerInput(
                      inputId = "leaderboard_date_filter",

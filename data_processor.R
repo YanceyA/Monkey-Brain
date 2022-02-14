@@ -1,3 +1,8 @@
+# #Package Coverage Test:
+# library(rstudioapi)
+# library(NCmisc)
+# list.functions.in.file(rstudioapi::getSourceEditorContext()$path, alphabetic = TRUE)
+
 
 #function to calcualte the speed based from distance and time vector
 speed_fxn <- function(dist, time)
@@ -13,7 +18,7 @@ speed_fxn <- function(dist, time)
 season_fxn <- function(results)
 {
   results_seasoned <- results %>%
-                         mutate(season = 
+                      dplyr::mutate(season = 
                                 case_when(date >= ymd("2010-6-01") & date < ymd("2011-6-01") ~ "2010-11 Season",
                                            date >= ymd("2011-6-01") & date < ymd("2012-6-01") ~ "2011-12 Season",
                                            date >= ymd("2012-6-01") & date < ymd("2013-6-01") ~ "2012-13 Season",
@@ -60,7 +65,7 @@ results$time <- round_hms(hms::as_hms(results$time), digits = 1)
 
 #calculate speeds if speed = 0 , i.e. speed was not recorded in source data
 results <- results %>% 
-                mutate(speed = case_when(speed_bit == 0 ~ speed_fxn(dist_km , time),
+           dplyr::mutate(speed = case_when(speed_bit == 0 ~ speed_fxn(dist_km , time),
                                                           TRUE ~ speed))
 
 #split and remerge data to add positions
@@ -69,10 +74,10 @@ results_pos_1 <- results %>%
 
 results_pos_0 <- results %>%
   dplyr::filter(position_bit == 0) %>% 
-  arrange(date, dist_km, desc(speed)) %>% 
-  group_by(date, dist_km, event) %>% 
-  mutate(position =  1:n()) %>% 
-  ungroup() 
+  dplyr::arrange(date, dist_km, desc(speed)) %>% 
+  dplyr::group_by(date, dist_km, event) %>% 
+  dplyr::mutate(position =  1:n()) %>% 
+  dplyr::ungroup() 
 
 results <- full_join(results_pos_1, results_pos_0) %>% 
                 mutate(speed = round(speed, digits = 1))
@@ -127,3 +132,29 @@ name_match <- function(name_list, match_level)
     # match_level <- 2
     # matched_names <- name_match(ctta_results$rider_name, match_level) %>%  filter(!is.na(b)) %>% arrange(a)
     # write.csv(matched_names, here("Data/Misc", paste0("matched_names_level_",match_level,".csv")))
+
+add_age_group <- function(results)
+{
+  #requires results with column date_of_birth or year_of_birth
+  
+  results_with_age_group <- results %>% 
+    dplyr::mutate(age_group = 
+                    case_when(year(date) - year(date_of_birth) < 15 ~ "U15",
+                              year(date) - year(date_of_birth) > 14 & year(date) - year(date_of_birth) < 17 ~ "U17",
+                              year(date) - year(date_of_birth) > 16 & year(date) - year(date_of_birth) < 19 ~ "U19",
+                              year(date) - year(date_of_birth) > 18 & year(date) - year(date_of_birth) < 23 ~ "U23",
+                              year(date) - year(date_of_birth) > 22 & year(date) - year(date_of_birth) < 35 ~ "Elite-Senior",
+                              year(date) - year(date_of_birth) > 34 & year(date) - year(date_of_birth) < 40 ~ "Masters 1",
+                              year(date) - year(date_of_birth) > 39 & year(date) - year(date_of_birth) < 45 ~ "Masters 2",
+                              year(date) - year(date_of_birth) > 44 & year(date) - year(date_of_birth) < 50 ~ "Masters 3",
+                              year(date) - year(date_of_birth) > 49 & year(date) - year(date_of_birth) < 55 ~ "Masters 4",
+                              year(date) - year(date_of_birth) > 54 & year(date) - year(date_of_birth) < 60 ~ "Masters 5",
+                              year(date) - year(date_of_birth) > 59 & year(date) - year(date_of_birth) < 65 ~ "Masters 6",
+                              year(date) - year(date_of_birth) > 64 & year(date) - year(date_of_birth) < 70 ~ "Masters 7",
+                              year(date) - year(date_of_birth) > 69 & year(date) - year(date_of_birth) < 75 ~ "Masters 8",
+                              year(date) - year(date_of_birth) > 74 & year(date) - year(date_of_birth) < 80 ~ "Masters 9",
+                              year(date) - year(date_of_birth) > 79  ~ "Masters 10",
+                              TRUE ~ "out_of_range"))
+  
+  return(results_seasoned)
+}

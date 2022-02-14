@@ -3,14 +3,10 @@ require(shiny)
 require(shinythemes)
 require(DT)
 require(bslib)
-require(thematic)
 require(shinyWidgets)
 require(plotly)
-library(ggtext)
-# library(ggiraph)
 library(renv)
 library(scales)
-library(extrafont)
 library(tidyverse)
 library(hms)
 library(lubridate)
@@ -20,13 +16,23 @@ library(tidyselect)
 library(janitor)
 library(readxl)
 library(tidytable)
-library(naniar)
 library(data.table)
 library(here)
-library(zoo)
-library(ggplot2)
 library(stringdist)
-# library(ggpubr)
+
+# Extra packages not needed
+# library(ggtext)
+# library(extrafont)
+# library(naniar)
+# library(ggplot2)
+# library(zoo)
+# require(thematic)
+
+#Package Coverage Test
+    # library(rstudioapi)
+    # library(NCmisc)
+    # list.functions.in.file(rstudioapi::getSourceEditorContext()$path, alphabetic = TRUE)
+
 
 #RENV-------------------------------
 # renv::init()
@@ -62,7 +68,7 @@ event_picker_inital_selection <- tt_results %>%
                                   dplyr::select(date, event, season) %>% 
                                   dplyr::arrange(desc(date)) %>% 
                                   dplyr::slice_head( n = 1 ) %>% 
-                                  mutate(date_event = paste0(date," - ",event))
+                                  dplyr::mutate(date_event = paste0(date," - ",event))
 
 #thematic_shiny(font = "auto") 
 
@@ -149,10 +155,47 @@ ui <- navbarPage(
       
 tabPanel("Leaderboards",
          fluidRow(
-           column(4,wellPanel(DTOutput("leaderboard_table_male" , height = 800 , width = "auto") )),
+           column(5, h1("Male LeaderBoard"), wellPanel(DTOutput("leaderboard_table_male" , height = 800 , width = "auto") )),
            
+           # column(4,wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") )),
+           column(5 , h1("Female LeaderBoard"), wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") )),
            
-           column(4,wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") ))
+           column(2, fluidRow( pickerInput(
+                     inputId = "leaderboard_date_filter",
+                     label = "Selected Season", 
+                     choices = c( "All" , sort(unique(tt_results$season), decreasing = T) ),
+                     selected = "All"
+                         ))  , 
+                  
+                  
+                  fluidRow( radioButtons( inputId = "leaderboard_type" , 
+                                          label = "Leaderboard Type" , 
+                                          choices = c("Fastest Riders" = "riders" , "Fastest Times - Top 500" = "times"), 
+                                          selected = "riders" )),
+                  fluidRow( radioButtons( inputId = "bike_type" , 
+                                          label = "Bike Type (in_dev_no_data)" , 
+                                          choices = c("Time Trial" = "TT" , "Road" = "road"), 
+                                          selected = "TT" )),
+                  fluidRow( radioButtons( inputId = "age_group" , 
+                                          label = "Age Group (in_dev_no_data)" , 
+                                          choices = c("All" = "all" , 
+                                                      "Elite-Senior" = "Elite-Senior", 
+                                                      "U15" = "u15", 
+                                                      "U17" = "u17" , 
+                                                      "U19" = "u19", 
+                                                      "U23" = "u23" , 
+                                                      "Masters 1" = "Masters 1", 
+                                                      "Masters 2" = "Masters 2", 
+                                                      "Masters 3" = "Masters 3", 
+                                                      "Masters 4" = "Masters 4", 
+                                                      "Masters 5" = "Masters 5", 
+                                                      "Masters 6" = "Masters 6", 
+                                                      "Masters 7" = "Masters 7", 
+                                                      "Masters 8" = "Masters 8",
+                                                      "Masters 9" = "Masters 9",
+                                                      "Masters 10" = "Masters 10"),
+                                          selected = "all" ))
+                  ),
            
          )),
 
@@ -293,7 +336,7 @@ server <- function(input, output, session) {
                                                        rownames = F,
                                                        selection = 'none') })
   
-  event_trns_male <- reactive({ leaderboard_table(tt_results, "male" , 16, "TT") })
+  event_trns_male <- reactive({ leaderboard_table(tt_results, gender_filter = "male" , dist_filter = 16, bike_type_filter = input$bike_type, leaderboard_type = input$leaderboard_type , ag_filter = input$age_group, date_filter = input$leaderboard_date_filter) })
   
   output$leaderboard_table_male <- renderDT({ datatable(event_trns_male(), 
                                                      options = list(info = F,
@@ -308,7 +351,7 @@ server <- function(input, output, session) {
                                                      rownames = F,
                                                      selection = 'none') })  
   
-  event_trns_female <- reactive({ leaderboard_table(tt_results, "female" , 16, "TT") })
+  event_trns_female <- reactive({ leaderboard_table(tt_results, "female" , dist_filter = 16, bike_type_filter = input$bike_type, leaderboard_type = input$leaderboard_type , ag_filter = input$age_group, date_filter = input$leaderboard_date_filter) })
   
   output$leaderboard_table_female <- renderDT({ datatable(event_trns_female(), 
                                                         options = list(info = F,

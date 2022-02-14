@@ -1,3 +1,8 @@
+# #Package Coverage Test:
+# library(rstudioapi)
+# library(NCmisc)
+# list.functions.in.file(rstudioapi::getSourceEditorContext()$path, alphabetic = TRUE)
+
 #### Athlete Results Plot, Filtered to 16km
 athlete_results_plot <- function(results, athlete) {
   
@@ -5,12 +10,12 @@ athlete_results_plot <- function(results, athlete) {
    
   # Filter and Organize primary data frame
   athlete_tt_results <- results %>% 
-                             filter(rider_name == athlete & hour(time) < 2) %>% 
-                             arrange(time) %>% 
-                             mutate(event = case_when(event = str_detect(event, "Loburn") ~ "Loburn TT",
+                             dplyr::filter(rider_name == athlete & hour(time) < 2) %>% 
+                             dplyr::arrange(time) %>% 
+                             dplyr::mutate(event = case_when(event = str_detect(event, "Loburn") ~ "Loburn TT",
                                                       TRUE ~ event)) %>% 
-                             mutate(time_segment_gap = time - gap)  %>% 
-                             mutate(event = paste0 ( event , " - " , as.character(dist_km) , "km" )  )
+                            dplyr::mutate(time_segment_gap = time - gap)  %>% 
+                            dplyr:: mutate(event = paste0 ( event , " - " , as.character(dist_km) , "km" )  )
 
   tt_results_plot <- ggplot(athlete_tt_results, aes(x=date, y=time)) +
                               geom_segment(aes(x=date, xend=date, y=0, yend = time), colour = "black") +
@@ -30,18 +35,18 @@ event_results_plot <- function(results, date, gender_filter, dist) {
   # Filter and Organize primary data frame
   date_filter <- ymd(str_sub(date,1,10))
   event_tt_results_filtered <- results %>% 
-                      filter(date == date_filter & hour(time) < 2) %>% 
+                      dplyr::filter(date == date_filter & hour(time) < 2) %>% 
                       # filter(dist_km == dist) %>% 
-                      mutate(dist_km_char = as.character(dist_km)) %>%
+                      dplyr::mutate(dist_km_char = as.character(dist_km)) %>%
                       dplyr::arrange(dist_km) %>%
                       dplyr::group_by(dist_km) %>% 
                       dplyr::arrange(time, .by_group = TRUE) %>% 
                       dplyr::ungroup() %>% 
-                      mutate(row_order = row_number()) %>% 
-                      mutate(rider_name = as.factor(rider_name) %>% fct_reorder(time, min))
+                      dplyr::mutate(row_order = row_number()) %>% 
+                      dplyr::mutate(rider_name = as.factor(rider_name) %>% fct_reorder(time, min))
 
   if (gender_filter != "both") {
-    event_tt_results_plot <- event_tt_results_filtered %>% filter(gender == gender_filter)
+    event_tt_results_plot <- event_tt_results_filtered %>% dplyr::filter(gender == gender_filter)
   }
     
     # event_tt_results_plot <- event_results_ggplot(event_tt_results_plot)

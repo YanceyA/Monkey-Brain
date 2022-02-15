@@ -54,7 +54,7 @@ air_density <- function(temp_C, rel_humidity, pressure)
 }
 
 #Air density quick calc
-air_density(18,.80,1018)
+air_density(18,.73,1021)
 
 process_raw_tt_data <- function(results , roster) 
 {
@@ -158,3 +158,19 @@ add_age_group <- function(results)
   
   return(results_seasoned)
 }
+
+new_name_check <-function()
+{
+  library(readxl)
+  library(readr)
+  library(magrittr)
+  library(janitor)
+  library(here)
+  library(dplyr)
+  
+  results <- read_xlsx(here("Data/Master Results", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+  roster <- read_csv(here("Data/Master Results", "ctta_roster.csv"))
+  missingnames <- anti_join(results, roster, by="rider_name")
+  return(missingnames)
+}
+

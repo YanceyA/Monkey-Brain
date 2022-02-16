@@ -1,4 +1,4 @@
-# #Package Coverage Test:
+#Package Coverage Test:
 # library(rstudioapi)
 # library(NCmisc)
 # list.functions.in.file(rstudioapi::getSourceEditorContext()$path, alphabetic = TRUE)

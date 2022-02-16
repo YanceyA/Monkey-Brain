@@ -7,19 +7,14 @@ require(shinyWidgets)
 require(plotly)
 library(renv)
 library(scales)
-library(tidyverse)
 library(hms)
 library(lubridate)
 library(magrittr)
-library(vroom)
-library(tidyselect)
-library(janitor)
-library(readxl)
-library(tidytable)
-library(data.table)
 library(here)
-library(stringdist)
-library(googleVis)  #Use this for headsup
+# library(googleVis)  #Use this for headsup
+library(dplyr)
+library(stringr)
+library(forcats)
 
 # Extra packages not needed
 # library(ggtext)
@@ -28,11 +23,20 @@ library(googleVis)  #Use this for headsup
 # library(ggplot2)
 # library(zoo)
 # require(thematic)
+# library(janitor)
+# library(readxl)
+# library(vroom)
+# library(tidyverse)
+# library(stringdist)
+# library(tidytable)
+# library(data.table)
+# library(tidyselect)
 
-#Package Coverage Test
-    # library(rstudioapi)
-    # library(NCmisc)
-    # list.functions.in.file(rstudioapi::getSourceEditorContext()$path, alphabetic = TRUE)
+
+# Package Coverage Test
+#     library(rstudioapi)
+#     library(NCmisc)
+#     list.functions.in.file(rstudioapi::getSourceEditorContext()$path, alphabetic = TRUE)
 
 
 #RENV-------------------------------
@@ -43,7 +47,7 @@ library(googleVis)  #Use this for headsup
 # Load Helper files -------------------------------
 source("figure_helper.R")
 source("table_helper.R")
-source("data_processor.R")
+#source("data_processor.R")
 #source("weather_processor.R")
 
 i_am("app.R")
@@ -53,16 +57,11 @@ i_am("app.R")
 # loadfonts(device = "win")
 
 #Load data and split out cancelled dates
-ctta_results <- read_xlsx(here("Data/Master Results", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-ctta_roster <- read_csv(here("Data/Master Results", "ctta_roster.csv"))
-
-tt_results <- process_raw_tt_data(results = ctta_results , roster = ctta_roster )
+tt_results <- readRDS(here("data/tt_results.RDS"))
+weather <- readRDS("data/tai_tapu_weather2010-2022.RDS")
 
 tt_cancelled_dates <- tt_results %>% filter(rider_name == "Cancelled")
-
 tt_results <- tt_results %>% filter(rider_name != "Cancelled") %>% filter(rider_name_2 != "DNF")
-
-weather <- readr::read_csv(here("Data/Master Results","tai_tapu_weather2010-2022.csv")) %>% dplyr::mutate(date = dmy(date))
 
 #initial selection variables for event page picker, selects the latest date
 event_picker_inital_selection <- tt_results %>% 

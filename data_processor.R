@@ -1,8 +1,18 @@
-# #Package Coverage Test:
+#Package Coverage Test:
 # library(rstudioapi)
 # library(NCmisc)
 # list.functions.in.file(rstudioapi::getSourceEditorContext()$path, alphabetic = TRUE)
 
+library(magrittr)
+library(readr)
+library(readxl)
+library(janitor)
+library(here)
+library(hms)
+library(dplyr)
+library(lubridate)
+library(stringr)
+library(stringdist)
 
 #function to calcualte the speed based from distance and time vector
 speed_fxn <- function(dist, time)
@@ -96,7 +106,7 @@ min_year <-  min(lubridate::year(results$date))
 max_year <-  max(lubridate::year(results$date))
 
 #Write Data to CSV for Shiny program
-write_csv(results, here("Data/Master Results", paste0("ctta_results_",min_year,"-",max_year,".csv")))
+write_csv(results, here("Data", paste0("ctta_results_",min_year,"-",max_year,".csv")))
 
 return(results)
 }
@@ -168,9 +178,27 @@ new_name_check <-function()
   library(here)
   library(dplyr)
   
-  results <- read_xlsx(here("Data/Master Results", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-  roster <- read_csv(here("Data/Master Results", "ctta_roster.csv"))
+  results <- read_xlsx(here("Data", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+  roster <- read_csv(here("Data", "ctta_roster.csv"))
   missingnames <- anti_join(results, roster, by="rider_name")
+  
+  #add missing names into roster file, add date tag, guess m/f, split names
+  
+  
   return(missingnames)
 }
+
+#check results and roster file for newnames
+new_name_check()
+
+
+#Read in results and roster file, process data, and save to RDS files for shiny app.
+ctta_results <- read_xlsx(here("data", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+ctta_roster <- read_csv(here("data", "ctta_roster.csv"))
+tt_results <- process_raw_tt_data(results = ctta_results , roster = ctta_roster )
+saveRDS(tt_results, file = here("data/tt_results.RDS"))
+
+#Read in weathers file, process data, and save to RDS files for shiny app.
+weather <- readr::read_csv(here("data","tai_tapu_weather2010-2022.csv")) %>% dplyr::mutate(date = dmy(date))
+saveRDS(weather, file = here("data/tai_tapu_weather2010-2022.RDS"))
 

@@ -19,6 +19,7 @@ library(tidytable)
 library(data.table)
 library(here)
 library(stringdist)
+library(googleVis)  #Use this for headsup
 
 # Extra packages not needed
 # library(ggtext)
@@ -157,49 +158,61 @@ tabPanel("Leaderboards",
          fluidRow(
            column(5, 
                   p(tags$b('Male Leaderboard:'), style = 'text-align:center; margin-bottom: 5px; font-size:140%;'), 
-                  wellPanel(DTOutput("leaderboard_table_male" , height = 800 , width = "auto") )),
+                  wellPanel(DTOutput("leaderboard_table_male" , height = 830 , width = "auto") )),
+           
+           column(2, p(tags$b('Filters:'), style = 'text-align:center; margin-bottom: 5px; font-size:140%;'),
+                  wellPanel(
+                  
+                  fluidRow( pickerInput(
+             inputId = "leaderboard_date_filter",
+             label = "Selected Season", 
+             choices = c( "All" , sort(unique(tt_results$season), decreasing = T) ),
+             selected = "All"
+           ))  , 
+           
+           
+           fluidRow( radioButtons( inputId = "leaderboard_type" , 
+                                   label = "Leaderboard Type" , 
+                                   choices = c("Fastest Riders" = "riders" , "Fastest Times - Top 500" = "times"), 
+                                   selected = "riders" )),
+           fluidRow( radioButtons( inputId = "bike_type" , 
+                                   label = "Bike Type (in_dev_no_data)" , 
+                                   choices = c("Time Trial" = "TT" , "Road" = "road"), 
+                                   selected = "TT" )),
+           fluidRow( radioButtons( inputId = "age_group" , 
+                                   label = "Age Group (in_dev_no_data)" , 
+                                   choices = c("All" = "all" , 
+                                               "Elite-Senior" = "Elite-Senior", 
+                                               "U15" = "u15", 
+                                               "U17" = "u17" , 
+                                               "U19" = "u19", 
+                                               "U23" = "u23" , 
+                                               "Masters 1" = "Masters 1", 
+                                               "Masters 2" = "Masters 2", 
+                                               "Masters 3" = "Masters 3", 
+                                               "Masters 4" = "Masters 4", 
+                                               "Masters 5" = "Masters 5", 
+                                               "Masters 6" = "Masters 6", 
+                                               "Masters 7" = "Masters 7", 
+                                               "Masters 8" = "Masters 8",
+                                               "Masters 9" = "Masters 9",
+                                               "Masters 10" = "Masters 10"),
+                                   selected = "all" ))
+           )),
+           
+           
+           
+           
+           
+           
+           
            
            # column(4,wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") )),
            column(5, 
                   p(tags$b('Female Leaderboard:'), style = 'text-align:center; margin-bottom: 5px; font-size:140%;'),
-                  wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") )),
+                  wellPanel(DTOutput("leaderboard_table_female" , height = 830 , width = "auto") )),
            
-           column(2, fluidRow( pickerInput(
-                     inputId = "leaderboard_date_filter",
-                     label = "Selected Season", 
-                     choices = c( "All" , sort(unique(tt_results$season), decreasing = T) ),
-                     selected = "All"
-                         ))  , 
-                  
-                  
-                  fluidRow( radioButtons( inputId = "leaderboard_type" , 
-                                          label = "Leaderboard Type" , 
-                                          choices = c("Fastest Riders" = "riders" , "Fastest Times - Top 500" = "times"), 
-                                          selected = "riders" )),
-                  fluidRow( radioButtons( inputId = "bike_type" , 
-                                          label = "Bike Type (in_dev_no_data)" , 
-                                          choices = c("Time Trial" = "TT" , "Road" = "road"), 
-                                          selected = "TT" )),
-                  fluidRow( radioButtons( inputId = "age_group" , 
-                                          label = "Age Group (in_dev_no_data)" , 
-                                          choices = c("All" = "all" , 
-                                                      "Elite-Senior" = "Elite-Senior", 
-                                                      "U15" = "u15", 
-                                                      "U17" = "u17" , 
-                                                      "U19" = "u19", 
-                                                      "U23" = "u23" , 
-                                                      "Masters 1" = "Masters 1", 
-                                                      "Masters 2" = "Masters 2", 
-                                                      "Masters 3" = "Masters 3", 
-                                                      "Masters 4" = "Masters 4", 
-                                                      "Masters 5" = "Masters 5", 
-                                                      "Masters 6" = "Masters 6", 
-                                                      "Masters 7" = "Masters 7", 
-                                                      "Masters 8" = "Masters 8",
-                                                      "Masters 9" = "Masters 9",
-                                                      "Masters 10" = "Masters 10"),
-                                          selected = "all" ))
-                  ),
+
            
          )),
 

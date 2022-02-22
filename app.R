@@ -108,27 +108,7 @@ ui <- navbarPage(
            
           ),
 
-#   tabPanel("Athlete Comparison",
-#            fluidRow( 
-#                column(8, align = "left",
-#                       selectizeInput(inputId = "athlete_name", label = NULL,
-#                                      choices = sort(unique(tt_results$rider_name)),
-#                                      selected = sample(c("Jake Marryatt", "Gary Ferguson", "David Roche", "Michael Vink", "Sharon Prutton",
-#                                                          "Mary Jones", "Reon Nolan", "Darran Humpheson"), 1),
-#                                      multiple = F,
-#                                      options = list(maxOptions = 1500)
-# ))),
-#                 column(5,wellPanel( DTOutput("event_results_table", height = 600, width = "auto") ), 
-# ),
-#    
-#            
-#            fluidRow(
-#                column(5,wellPanel( DTOutput("event_results_table", height = 600, width = "auto") )), 
-#                column(7,wellPanel( plotOutput("event_fig", height = 600, width = "auto") ),
-# )), 
-#            
-# ),
-  
+
   tabPanel("Athlete Records",
            fluidRow(column(4,
                     fluidRow(column(12,
@@ -199,21 +179,30 @@ tabPanel("Leaderboards",
                                    selected = "all" ))
            )),
            
-           
-           
-           
-           
-           
-           
-           
-           # column(4,wellPanel(DTOutput("leaderboard_table_female" , height = 800 , width = "auto") )),
            column(5, 
                   p(tags$b('Female Leaderboard:'), style = 'text-align:center; margin-bottom: 5px; font-size:140%;'),
                   wellPanel(DTOutput("leaderboard_table_female" , height = 830 , width = "auto") )),
-           
 
-           
          )),
+
+
+# tabPanel("Athlete Comparison",
+#          fluidRow(
+#            column(4, align = "left",
+#                   selectizeInput(inputId = "athlete_name_compare_1", label = NULL,
+#                                  choices = sort(unique(tt_results$rider_name)),
+#                                  multiple = F,
+#                                  options = list(maxOptions = 1500)),
+#                 selectizeInput(inputId = "athlete_name_compare_2", label = NULL,
+#                                  choices = sort(unique(tt_results$rider_name)),
+#                                  multiple = F,
+#                                  options = list(maxOptions = 1500))
+#                   
+#                  ),
+#             column(8,wellPanel(  ) )
+# 
+#                 )),
+
 
 
   # About Tab ------------------------------------------------

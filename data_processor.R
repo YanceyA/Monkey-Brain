@@ -64,7 +64,7 @@ air_density <- function(temp_C, rel_humidity, pressure)
 }
 
 #Air density quick calc
-air_density(18,.73,1021)
+air_density(27,.45,1016)
 
 process_raw_tt_data <- function(results , roster) 
 {
@@ -187,6 +187,9 @@ new_name_check <-function()
   
   return(missingnames)
 }
+
+
+i_am("data_processor.R")
 
 #check results and roster file for newnames
 new_name_check()

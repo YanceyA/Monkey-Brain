@@ -99,6 +99,20 @@ leaderboard_table <- function(results, gender_filter, dist_filter, bike_type_fil
 }
 
 
+compare_table <- function(results){
+  
+  
+  
+  
+  
+  
+  return()
+}
+
+
+
+
+
 
 # 
 # date_temp <- dmy(23112021)

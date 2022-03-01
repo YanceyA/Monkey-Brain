@@ -64,7 +64,7 @@ air_density <- function(temp_C, rel_humidity, pressure)
 }
 
 #Air density quick calc
-air_density(27,.45,1016)
+air_density(18,.70,1021)
 
 process_raw_tt_data <- function(results , roster) 
 {
@@ -169,7 +169,7 @@ add_age_group <- function(results)
   return(results_seasoned)
 }
 
-new_name_check <-function()
+new_name_check <-function(write_files)
 {
   library(readxl)
   library(readr)
@@ -177,27 +177,57 @@ new_name_check <-function()
   library(janitor)
   library(here)
   library(dplyr)
+  library(stringr)
+  library(lubridate)
+  library(gender)
+  library(tibble)
+  library(tidyr)
   
   results <- read_xlsx(here("Data", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-  roster <- read_csv(here("Data", "ctta_roster.csv"))
-  missingnames <- anti_join(results, roster, by="rider_name")
+  roster <- read_csv(here("Data", "ctta_roster.csv"), col_types = cols()) %>% mutate(date_added_to_roster = ymd(parse_date_time(date_added_to_roster, c("dmy", "ymd"))))
   
-  #add missing names into roster file, add date tag, guess m/f, split names
+  #test files for FXN with name differences
+  # results <- read_xlsx(here("Temp", "tt_results_master_test.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+  # roster <- read_csv(here("Temp", "ctta_roster_test.csv"), col_types = cols()) %>% mutate(date_added = ymd(date_added))
   
+  #Determine new names to be added and construct df
+  new_names <- anti_join(results, roster, by="rider_name") %>% 
+    select(rider_name) %>% 
+    unique() %>% 
+    separate(rider_name, c("rider_name_first", "rider_name_last"), sep = " ", remove=FALSE, extra = "merge") %>%                   
+    mutate(date_added_to_roster = Sys.Date())
   
-  return(missingnames)
+  if (nrow(new_names) == 0) {
+    print("No new names")
+  }
+  
+  else{
+  #create gender guess matrix
+  gender_list <- gender(new_names$rider_name_first, method = "genderize") %>% select(gender)
+  
+  #Add gender to new name roster and reintegrate into the entire roster
+  new_names_roster <- new_names %>% mutate(gender = gender_list$gender)
+  
+  #Create New Roster
+  ctta_roster <- full_join(new_names_roster ,  roster)
+  
+  #write files
+  if (write_files == TRUE) {
+      saveRDS(ctta_roster, file = here("data/ctta_roster.RDS"))
+      write_csv(ctta_roster, file = here("data/ctta_roster.csv") )
+  }
+  return(new_names_roster)
+  }
 }
-
 
 i_am("data_processor.R")
 
-#check results and roster file for newnames
-new_name_check()
-
+#check results and roster file for newnames and write new files if required
+new_riders_roster <- new_name_check(write_files = FALSE)
 
 #Read in results and roster file, process data, and save to RDS files for shiny app.
 ctta_results <- read_xlsx(here("data", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-ctta_roster <- read_csv(here("data", "ctta_roster.csv"))
+ctta_roster <- readRDS("data/ctta_roster.RDS")            #read_csv(here("data", "ctta_roster.csv"))
 tt_results <- process_raw_tt_data(results = ctta_results , roster = ctta_roster )
 saveRDS(tt_results, file = here("data/tt_results.RDS"))
 

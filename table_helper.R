@@ -43,7 +43,7 @@ weather_results <- function(weather, date) {
   #Output table names
   header <- c( "Temp" = "tair_c" , "Humidity" = "rh_percent" , "Pressure" = "pressure" , "Wind Spd" = "speed_km_hr", "Wind Dir" = "wd_cardinal" , "Density" = "density")
   
-  date_filter <- ymd(str_sub(date,1,10))
+  date_filter <- ymd(stringr::str_sub(date,1,10))
   
   tbl_oi <- weather %>%
     dplyr::filter(date == date_filter) %>%

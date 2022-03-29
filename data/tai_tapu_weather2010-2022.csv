@@ -203,3 +203,4 @@ date,tair_c,rh_percent,dir_deg_t,speed_km_hr,pressure,density,wd_cardinal
 3/01/2022,18,70,45,4,1021,1.213,Northeast
 8/03/2022,18,80,90,19,1020,1.212,East
 15/03/2022,15,80,225,8,1028,1.236,Southwest
+29/03/2022,18,85,90,7,1020,1.212,East

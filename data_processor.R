@@ -13,6 +13,7 @@ library(dplyr)
 library(lubridate)
 library(stringr)
 library(stringdist)
+library(clifro)
 
 #function to calcualte the speed based from distance and time vector
 speed_fxn <- function(dist, time)
@@ -57,7 +58,8 @@ air_density <- function(temp_C, rel_humidity, pressure)
   pv <- (6.1078 * 10^(  (7.5 * temp_C) / (T + 237.3) ) )* rel_humidity
   pd <- pressure - pv
   
-  density <- 100  * ((pd / (287.0531 * (temp_C + 273.15))) + (pv / (461.4964 * (temp_C + 273.15))) )
+  density <- 100  * ((pd / (287.0531 * (temp_C + 273.15))) + (pv / (461.4964 * (temp_C + 273.15))) ) %>% 
+              round(digits = 5)
   
   return(density)
   
@@ -99,7 +101,7 @@ rm(results_pos_0 , results_pos_1 )
 results <- season_fxn(results)
 
 #add gender and age group to results, taken from roster
-results <- left_join(results, roster, by= "rider_name") %>% dplyr::mutate( rider_name_abbv = paste0(rider_name_first," ",str_sub(rider_name_last , 1 , 1),".") )
+results <- left_join(results, roster, by= "rider_name") %>% dplyr::mutate( rider_name_abbv = paste0(rider_name_first," ",str_sub(rider_name_last , 1 , 1),".") ) %>% mutate(date = as_date(date))
 
 #Determine min/max year for file naming
 min_year <-  min(lubridate::year(results$date))
@@ -186,10 +188,6 @@ new_name_check <-function(write_files)
   results <- read_xlsx(here("Data", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
   roster <- read_csv(here("Data", "ctta_roster.csv"), col_types = cols()) %>% mutate(date_added_to_roster = ymd(parse_date_time(date_added_to_roster, c("dmy", "ymd"))))
   
-  #test files for FXN with name differences
-  # results <- read_xlsx(here("Temp", "tt_results_master_test.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-  # roster <- read_csv(here("Temp", "ctta_roster_test.csv"), col_types = cols()) %>% mutate(date_added = ymd(date_added))
-  
   #Determine new names to be added and construct df
   new_names <- anti_join(results, roster, by="rider_name") %>% 
     select(rider_name) %>% 
@@ -199,6 +197,7 @@ new_name_check <-function(write_files)
   
   if (nrow(new_names) == 0) {
     print("No new names")
+    return(NULL)
   }
   
   else{
@@ -207,31 +206,145 @@ new_name_check <-function(write_files)
   
   #Add gender to new name roster and reintegrate into the entire roster
   new_names_roster <- new_names %>% mutate(gender = gender_list$gender)
-  
-  #Create New Roster
-  ctta_roster <- full_join(new_names_roster ,  roster)
-  
+  print(new_names_roster)
   #write files
   if (write_files == TRUE) {
-      saveRDS(ctta_roster, file = here("data/ctta_roster.RDS"))
-      write_csv(ctta_roster, file = here("data/ctta_roster.csv") )
+    #Create New Roster
+    ctta_roster_updated <- full_join(new_names_roster ,  roster)
+    #Save Files
+    saveRDS(ctta_roster_updated, file = here("data/ctta_roster.RDS"))
+    write_csv(ctta_roster_updated, file = here("data/ctta_roster.csv") )
   }
   return(new_names_roster)
   }
 }
 
+weather_update <- function(fxn_results, fxn_weather)
+{
+  source("crypt.R")
+  
+  missing_weather_date <- fxn_results %>% 
+    dplyr::filter(location == "Tai Tapu") %>% 
+    select(date) %>% 
+    unique() %>% 
+    dplyr::filter(!date %in% fxn_weather$date) 
+  
+  #convert date into string in order to construct the cflio arguments
+  missing_weather_date <- format(missing_weather_date$date, "%Y-%m-%d")
+  
+  #create dataframe blank
+  clifo_weather <- slice(fxn_weather, 0)
+  #clifo user credentials
+  load("cflio_key.RData")
+  cflio_creds <- read.aes(filename = "cflio_creds.txt", key = key)
+  yancey_user <- cf_user(username = cflio_creds$username, password = cflio_creds$password)
+  rm(cflio_creds)
+  rm(key)
+  
+  #setting data types to request by column: surface wind, std observations, and pressure
+  wind_temp_humidity <- cf_datatype(c(2, 4, 7),
+                                    c(1, 1, 1),
+                                    list(2, 1, 1),
+                                    c(2, NA, NA))
+  
+  #station request
+  lincoln_broadfield_Ews <- cf_station(17603)
+  start_time <- "18"  #5pm
+  end_time <- "19"    #7pm
+  
+  #Create Cardinal wind direction variables
+  rose_breaks <- c(0, 360/16, (1/16 + (1:7 / 8)) * 360, 360)
+  rose_labs <- c(
+    "North", "Northeast",
+    "East", "Southeast", 
+    "South",  "Southwest", 
+    "West",  "Northwest",
+    "North")
+  
+
+  if(length(missing_weather_date) == 0) {print("No missing weather dates")
+    return(clifo_weather)
+    }
+  
+  else{
+  for (n in 1:length(missing_weather_date)) {
+    #construct start date in loop
+    
+    start_date = str_c(missing_weather_date[n], start_time, sep = " ")
+    end_date = str_c(missing_weather_date[n], end_time, sep = " ") 
+    
+    #clifo weather query
+    print( paste0("Date: ",missing_weather_date[n]))
+    weather_query <- cf_query(user = yancey_user,
+                       datatype = wind_temp_humidity,
+                       station = lincoln_broadfield_Ews,
+                       start_date ,
+                       end_date )
+    #If loop if the 3 requested data frames are returned
+    if(length(weather_query) == 3 ){
+    weather_record <- full_join(as_tibble(weather_query[[1]]), as_tibble(weather_query[[2]]) , c("Station", "Date(local)") ) %>% 
+                      full_join(., as_tibble(weather_query[[3]]), c("Station", "Date(local)")) %>% 
+                      select("Dir(DegT)", "Speed(km/hr)", "Tair(C)", "RH(%)", "Pmsl(hPa)") %>% 
+                      dplyr::rename(
+                        tair_c = "Tair(C)",
+                        rh_percent = "RH(%)",
+                        dir_deg_t = "Dir(DegT)",
+                        speed_km_hr = "Speed(km/hr)",
+                        pressure = "Pmsl(hPa)" ) %>% 
+                      dplyr::summarize(
+                        tair_c = mean(tair_c),
+                        rh_percent = mean(rh_percent),
+                        dir_deg_t = mean(dir_deg_t),
+                        speed_km_hr = mean(speed_km_hr),
+                        pressure = mean(pressure)) %>% 
+                        mutate(across(everything(), round, 0))
+    
+    weather_record$density = air_density(weather_record$tair_c , weather_record$rh_percent/100, weather_record$pressure) 
+    
+    weather_record$date = as_date(missing_weather_date[n])
+    
+    weather_record <- weather_record %>% 
+                    mutate(wd_cardinal = cut(
+                    dir_deg_t, 
+                    breaks = rose_breaks, 
+                    labels = rose_labs))
+    
+    clifo_weather <- rbind(clifo_weather, weather_record)
+    
+    print("New Weather Added")
+    print(tail(clifo_weather, n = length(missing_weather_date)))
+    
+    }
+    if (length(weather_query) == 2) {
+      print( paste0("Date: ",missing_weather_date))
+      print( paste0("Error: Only 2 dataframes, ", my_query[[1]]@dt_name, " and " , my_query[[2]]@dt_name, " returned"))
+    }
+    if (length(weather_query) == 1) {
+      print( paste0("Date: ",missing_weather_date[n]))
+      print( paste0("Error: Only 1 dataframe, ", my_query[[1]]@dt_name, " returned"))
+    }
+  }
+  return(clifo_weather)}
+}
+
 i_am("data_processor.R")
 
-#check results and roster file for newnames and write new files if required
+#check results and roster file for newnames and write new (CSV and RDS) if TRUE
 new_riders_roster <- new_name_check(write_files = FALSE)
 
 #Read in results and roster file, process data, and save to RDS files for shiny app.
 ctta_results <- read_xlsx(here("data", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-ctta_roster <- readRDS("data/ctta_roster.RDS")            #read_csv(here("data", "ctta_roster.csv"))
+
+ctta_roster <- readRDS("data/ctta_roster.RDS") #read_csv(here("data", "ctta_roster.csv"))
+
 tt_results <- process_raw_tt_data(results = ctta_results , roster = ctta_roster )
-saveRDS(tt_results, file = here("data/tt_results.RDS"))
 
 #Read in weathers file, process data, and save to RDS files for shiny app.
-weather <- readr::read_csv(here("data","tai_tapu_weather2010-2022.csv")) %>% dplyr::mutate(date = dmy(date))
-saveRDS(weather, file = here("data/tai_tapu_weather2010-2022.RDS"))
+tt_weather <- readr::read_csv(here("data","tai_tapu_weather2010-2022.csv")) #%>% dplyr::mutate(date = format(date, "%d-%m-%Y"))
+
+tt_weather <- weather_update(tt_results, tt_weather) %>% full_join(tt_weather, . , c("date", "tair_c", "rh_percent", "dir_deg_t", "speed_km_hr", "pressure", "density", "wd_cardinal") )
+
+saveRDS(tt_results, file = here("data/tt_results.RDS"))
+write.csv(tt_weather, file = here("data/tai_tapu_weather2010-2022.csv"), row.names = FALSE)
+saveRDS(tt_weather, file = here("data/tai_tapu_weather2010-2022.RDS"))
 

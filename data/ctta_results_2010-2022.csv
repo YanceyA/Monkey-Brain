@@ -4977,7 +4977,50 @@ position,position_bit,rider_name,rider_name_2,time,time_sec,speed,speed_bit,dist
 38,1,Pam Hogarth,N/A,00:31:45.0,1905.0000000000002,30.2,1,16,2022-03-29,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2021-22 Season,Pam,Hogarth,2022-01-01,female,Pam H.
 39,1,Bruce Stanton,N/A,00:33:26.0,2006,28.7,1,16,2022-03-29,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2021-22 Season,Bruce,Stanton,2022-01-01,male,Bruce S.
 1,1,Cancelled,N/A,00:00:00.0,0,0,1,16,2022-03-22,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2021-22 Season,Cancelled,NA,2022-01-01,male,Cancelled NA.
-39,1,Yancey TestUser,N/A,00:33:26.0,2006,28.7,1,16,2022-06-01,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,out_of_range,NA,NA,NA,NA,"NA NA."
+1,1,Nate Pringle,N/A,00:20:42.0,1242,46.4,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Nate,Pringle,2022-10-04,male,Nate P.
+2,1,Rainer Pye,N/A,00:22:17.0,1337.0000000000002,43.1,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Rainer,Pye,2022-01-01,male,Rainer P.
+3,1,Neil Sutherland,N/A,00:22:19.4,1339.4,43,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Neil,Sutherland,2022-01-01,male,Neil S.
+4,1,Heath Eckersley,N/A,00:22:20.5,1340.5,43,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Heath,Eckersley,2022-01-01,male,Heath E.
+5,1,Tom O'Niell,N/A,00:22:30.6,1350.6000000000001,42.6,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Tom,O'Niell,2022-01-01,male,Tom O.
+6,1,Kris Bowditch,N/A,00:22:31.5,1351.5,42.6,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Kris,Bowditch,2022-01-01,male,Kris B.
+7,1,David Roche,N/A,00:22:40.9,1360.8999999999999,42.3,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,David,Roche,2022-01-01,male,David R.
+8,1,Simon Yeadon,N/A,00:23:17.1,1397.1000000000001,41.2,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Simon,Yeadon,2022-01-01,male,Simon Y.
+9,1,Kea Gawn,N/A,00:23:18.1,1398.1000000000001,41.2,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Kea,Gawn,2022-10-04,female,Kea G.
+10,1,Flavio Vianna,N/A,00:23:19.1,1399.1,41.2,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Flavio,Vianna,2022-01-01,male,Flavio V.
+11,1,Luca Hawtin,N/A,00:23:30.7,1410.6999999999998,40.8,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Luca,Hawtin,2022-01-01,male,Luca H.
+12,1,Alex Frame,N/A,00:23:40.1,1420.1,40.6,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Alex,Frame,2022-01-01,male,Alex F.
+13,1,Alex Johnson,N/A,00:23:43.0,1422.9999999999998,40.5,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Alex,Johnson,2022-01-01,male,Alex J.
+14,1,Gary Ferguson,N/A,00:23:45.3,1425.3,40.4,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Gary,Ferguson,2022-01-01,male,Gary F.
+15,1,Mike Draper,N/A,00:24:24.0,1463.9999999999998,39.3,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Mike,Draper,2022-01-01,male,Mike D.
+16,1,Hannah Bartram,N/A,00:24:57.3,1497.3,38.5,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Hannah,Bartram,2022-01-01,female,Hannah B.
+17,1,Scott Black,N/A,00:25:42.9,1542.8999999999999,37.3,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Scott,Black,2022-10-04,male,Scott B.
+18,1,Geetrui Van Devoorde,N/A,00:26:06.6,1566.6,36.8,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Geetrui,Van Devoorde,2022-01-01,female,Geetrui V.
+19,1,Jelle Pieksma,N/A,00:26:15.0,1575,36.6,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Jelle,Pieksma,2022-10-04,male,Jelle P.
+20,1,James Rashbrock-Field,N/A,00:26:18.3,1578.3000000000002,36.5,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,James,Rashbrock-Field,2022-10-04,male,James R.
+21,1,Alexis Migoanoff,N/A,00:26:36.4,1596.4,36.1,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Alexis,Migoanoff,2022-01-01,male,Alexis M.
+22,1,Andy Airey,N/A,00:26:55.6,1615.6,35.7,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Andy,Airey,2022-01-01,male,Andy A.
+23,1,Ben Kemp,N/A,00:27:00.0,1620,35.6,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Ben,Kemp,2022-10-04,male,Ben K.
+24,1,Karen Dombroski,N/A,00:27:06.3,1626.3,35.4,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Karen,Dombroski,2022-10-04,female,Karen D.
+25,1,Emmet Williams,N/A,00:27:24.7,1644.6999999999998,35,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Emmet,Williams,2022-10-04,male,Emmet W.
+26,1,Fiona Dowling,N/A,00:27:46.5,1666.5,34.6,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Fiona,Dowling,2022-01-01,female,Fiona D.
+27,1,Harley Peddie,N/A,00:27:51.7,1671.6999999999998,34.5,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Harley,Peddie,2022-01-01,male,Harley P.
+28,1,Nicky Sweetman,N/A,00:28:07.4,1687.4000000000003,34.1,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Nicky,Sweetman,2022-01-01,female,Nicky S.
+29,1,Alice Mullins,N/A,00:28:17.0,1697.0000000000002,33.9,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Alice,Mullins,2022-01-01,female,Alice M.
+30,1,Lauren Clark,N/A,00:28:25.8,1705.8,33.8,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Lauren,Clark,2022-10-04,female,Lauren C.
+31,1,Charlotte Chiles,N/A,00:28:27.4,1707.3999999999999,33.7,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Charlotte,Chiles,2022-10-04,female,Charlotte C.
+32,1,Mary Jones,N/A,00:28:37.4,1717.4,33.5,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Mary,Jones,2022-01-01,female,Mary J.
+33,1,Emma Johns,N/A,00:29:04.0,1744,33,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Emma,Johns,2022-10-04,female,Emma J.
+34,1,Mike Greene,N/A,00:29:20.1,1760.1,32.7,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Mike,Greene,2022-01-01,male,Mike G.
+35,1,Jim Thomson,N/A,00:29:24.2,1764.1999999999998,32.6,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Jim,Thomson,2022-03-08,male,Jim T.
+36,1,Trish Jones,N/A,00:30:11.0,1811,31.8,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Trish,Jones,2022-01-01,female,Trish J.
+37,1,Jo Nunnerley,N/A,00:31:06.1,1866.1000000000001,30.9,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Jo,Nunnerley,2022-10-04,female,Jo N.
+38,1,Morgan Anne,N/A,00:31:25.8,1885.8000000000002,30.5,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Morgan,Anne,2022-10-04,male,Morgan A.
+39,1,Richard Moore,DNF,00:00:00.0,0,0,1,16,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Richard,Moore,2022-01-01,male,Richard M.
+1,1,Ian Milne,N/A,00:12:28.0,748,38.5,1,8,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Ian,Milne,2022-01-01,male,Ian M.
+2,1,Rod Hogarth,N/A,00:15:50.0,950,30.3,1,8,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Rod,Hogarth,2022-01-01,male,Rod H.
+3,1,Pam Hogarth,N/A,00:15:08.3,908.3000000000001,31.7,1,8,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Pam,Hogarth,2022-01-01,female,Pam H.
+4,1,Wei Ping Chew,N/A,00:15:10.0,910,31.6,1,8,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Wei,Ping Chew,2022-10-04,male,Wei P.
+5,1,Michell Godfrey-Hawtin,N/A,00:16:50.0,1010,28.5,1,8,2022-10-04,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2022-23 Season,Michell,Godfrey-Hawtin,2022-10-04,female,Michell G.
 1,0,Simon Acker,N/A,00:22:15.0,1335.0000000000095,43.1,0,16,2012-10-12,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2012-13 Season,Simon,Acker,2022-01-01,male,Simon A.
 2,0,Neil Sutherland,N/A,00:22:26.0,1346.0000000000257,42.8,0,16,2012-10-12,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2012-13 Season,Neil,Sutherland,2022-01-01,male,Neil S.
 3,0,Richard Lawson,N/A,00:22:27.0,1347.000000000019,42.8,0,16,2012-10-12,Tai Tapu TT,Solo,Tai Tapu,TT,Standard course,TT,2012-13 Season,Richard,Lawson,2022-01-01,male,Richard L.

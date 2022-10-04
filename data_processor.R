@@ -14,6 +14,9 @@ library(lubridate)
 library(stringr)
 library(stringdist)
 library(clifro)
+library(gender)
+library(tibble)
+library(tidyr)
 
 #function to calcualte the speed based from distance and time vector
 speed_fxn <- function(dist, time)
@@ -26,6 +29,7 @@ speed_fxn <- function(dist, time)
 }
 
 #Function to apply the appropriate Season title to each record
+#needs to be updated each year
 season_fxn <- function(results)
 {
   results_seasoned <- results %>%
@@ -42,6 +46,7 @@ season_fxn <- function(results)
                                            date >= ymd("2019-6-01") & date < ymd("2020-6-01") ~ "2019-20 Season",
                                            date >= ymd("2020-6-01") & date < ymd("2021-6-01") ~ "2020-21 Season",
                                            date >= ymd("2021-6-01") & date < ymd("2022-6-01") ~ "2021-22 Season",
+                                           date >= ymd("2022-6-01") & date < ymd("2023-6-01") ~ "2022-23 Season",
                                            TRUE ~ "out_of_range"))
   return(results_seasoned)
 }
@@ -221,6 +226,9 @@ new_name_check <-function(write_files)
 
 weather_update <- function(fxn_results, fxn_weather)
 {
+  #DMY date
+  fxn_weather$date <- dmy(fxn_weather$date)
+  
   source("crypt.R")
   
   missing_weather_date <- fxn_results %>% 
@@ -347,4 +355,8 @@ tt_weather <- weather_update(tt_results, tt_weather) %>% full_join(tt_weather, .
 saveRDS(tt_results, file = here("data/tt_results.RDS"))
 write.csv(tt_weather, file = here("data/tai_tapu_weather2010-2022.csv"), row.names = FALSE)
 saveRDS(tt_weather, file = here("data/tai_tapu_weather2010-2022.RDS"))
+
+#write files to shiny app directory
+saveRDS(tt_results, file = here("C:/Users/yance/OneDrive - Allied Motion Technologies Inc/Desktop/R and BI Projects/CTTA Shiny App/data/tt_results.RDS"))
+saveRDS(tt_weather, file = here("C:/Users/yance/OneDrive - Allied Motion Technologies Inc/Desktop/R and BI Projects/CTTA Shiny App/data/tai_tapu_weather2010-2022.RDS"))
 

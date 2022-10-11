@@ -1,6 +1,11 @@
 rider_name,rider_name_first,rider_name_last,date_added_to_roster,gender
+Ben Oliver,Ben,Oliver,2022-10-11,male
+Shayne Hendrix,Shayne,Hendrix,2022-10-11,male
+Matt Jackson,Matt,Jackson,2022-10-11,male
+Karl McBride,Karl,McBride,2022-10-11,male
+Mary MacNicol,Mary,MacNicol,2022-10-11,female
 Nate Pringle,Nate,Pringle,2022-10-04,male
-Kea Gawn,Kea,Gawn,2022-10-04,female
+Kea Gawn,Kea,Gawn,2022-10-04,male
 Scott Black,Scott,Black,2022-10-04,male
 Jelle Pieksma,Jelle,Pieksma,2022-10-04,male
 James Rashbrock-Field,James,Rashbrock-Field,2022-10-04,male
@@ -11,7 +16,7 @@ Lauren Clark,Lauren,Clark,2022-10-04,female
 Charlotte Chiles,Charlotte,Chiles,2022-10-04,female
 Emma Johns,Emma,Johns,2022-10-04,female
 Jo Nunnerley,Jo,Nunnerley,2022-10-04,female
-Morgan Anne,Morgan,Anne,2022-10-04,male
+Morgan Ahu,Morgan,Ahu,2022-10-04,female
 Wei Ping Chew,Wei,Ping Chew,2022-10-04,male
 Michell Godfrey-Hawtin,Michell,Godfrey-Hawtin,2022-10-04,female
 Jonathan Fish,Jonathan,Fish,2022-03-29,male
@@ -743,7 +748,7 @@ Nathan Cohen,Nathan,Cohen,2022-01-01,male
 Adam Hillis,Adam,Hillis,2022-01-01,male
 Kate McIlroy,Kate,McIlroy,2022-01-01,female
 Hayden Prattley,Hayden,Prattley,2022-01-01,male
-Alexis Migoanoff,Alexis,Migoanoff,2022-01-01,male
+Alexis Migounoff,Alexis,Migounoff,2022-01-01,male
 Tony McGuire,Tony,McGuire,2022-01-01,male
 Darcy Forrester,Darcy,Forrester,2022-01-01,male
 Adam Willington,Adam,Willington,2022-01-01,male

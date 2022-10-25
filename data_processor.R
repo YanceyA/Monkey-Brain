@@ -118,7 +118,7 @@ write_csv(results, here("Data", paste0("ctta_results_",min_year,"-",max_year,".c
 return(results)
 }
 
-#####Name Match code deactivated
+#####Name Match code deactivated, for parsing name misspellings
 
 #Function for string distance matching for similar names comparison
 #match_level = 1 strict (1char diff) / 5 loose. 2-3 best setting 
@@ -152,28 +152,28 @@ name_match <- function(name_list, match_level)
 
 add_age_group <- function(results)
 {
-  #requires results with column date_of_birth or year_of_birth
+  #requires results with column year_of_birth 
   
   results_with_age_group <- results %>% 
     dplyr::mutate(age_group = 
-                    case_when(year(date) - year(date_of_birth) < 15 ~ "U15",
-                              year(date) - year(date_of_birth) > 14 & year(date) - year(date_of_birth) < 17 ~ "U17",
-                              year(date) - year(date_of_birth) > 16 & year(date) - year(date_of_birth) < 19 ~ "U19",
-                              year(date) - year(date_of_birth) > 18 & year(date) - year(date_of_birth) < 23 ~ "U23",
-                              year(date) - year(date_of_birth) > 22 & year(date) - year(date_of_birth) < 35 ~ "Elite-Senior",
-                              year(date) - year(date_of_birth) > 34 & year(date) - year(date_of_birth) < 40 ~ "Masters 1",
-                              year(date) - year(date_of_birth) > 39 & year(date) - year(date_of_birth) < 45 ~ "Masters 2",
-                              year(date) - year(date_of_birth) > 44 & year(date) - year(date_of_birth) < 50 ~ "Masters 3",
-                              year(date) - year(date_of_birth) > 49 & year(date) - year(date_of_birth) < 55 ~ "Masters 4",
-                              year(date) - year(date_of_birth) > 54 & year(date) - year(date_of_birth) < 60 ~ "Masters 5",
-                              year(date) - year(date_of_birth) > 59 & year(date) - year(date_of_birth) < 65 ~ "Masters 6",
-                              year(date) - year(date_of_birth) > 64 & year(date) - year(date_of_birth) < 70 ~ "Masters 7",
-                              year(date) - year(date_of_birth) > 69 & year(date) - year(date_of_birth) < 75 ~ "Masters 8",
-                              year(date) - year(date_of_birth) > 74 & year(date) - year(date_of_birth) < 80 ~ "Masters 9",
-                              year(date) - year(date_of_birth) > 79  ~ "Masters 10",
-                              TRUE ~ "out_of_range"))
+                    case_when(year(date) - year(ymd(year_of_birth, truncated = 2L)) < 15 ~ "U15",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 14 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 17 ~ "U17",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 16 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 19 ~ "U19",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 18 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 23 ~ "U23",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 22 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 35 ~ "Elite-Senior",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 34 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 40 ~ "Masters 1",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 39 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 45 ~ "Masters 2",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 44 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 50 ~ "Masters 3",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 49 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 55 ~ "Masters 4",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 54 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 60 ~ "Masters 5",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 59 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 65 ~ "Masters 6",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 64 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 70 ~ "Masters 7",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 69 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 75 ~ "Masters 8",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 74 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 80 ~ "Masters 9",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 79  ~ "Masters 10",
+                              TRUE ~ "AG_unknown"))
   
-  return(results_seasoned)
+  return(results_with_age_group)
 }
 
 new_name_check <-function(write_files)
@@ -190,8 +190,13 @@ new_name_check <-function(write_files)
   library(tibble)
   library(tidyr)
   
-  results <- read_xlsx(here("Data", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
-  roster <- read_csv(here("Data", "ctta_roster.csv"), col_types = cols()) %>% mutate(date_added_to_roster = ymd(parse_date_time(date_added_to_roster, c("dmy", "ymd"))))
+  results <- read_xlsx(here("Data", "tt_results_master.xlsx"), guess_max = 100000) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+  roster <- read_csv(here("Data", "ctta_roster.csv"), col_types = cols()) %>% 
+            mutate(date_added_to_roster = ymd(parse_date_time(date_added_to_roster, c("dmy", "ymd")))) %>% 
+            select(-c(last_race_date, first_race_date ))
+  
+  first_race_date <- results %>% select(rider_name, date) %>% group_by(rider_name) %>% dplyr::arrange(date, .by_group = TRUE) %>% slice(1L) %>% rename(first_race_date = date) %>% mutate(first_race_date = ymd(first_race_date))
+  last_race_date <- results %>% select(rider_name, date) %>% group_by(rider_name) %>% dplyr::arrange(desc(date), .by_group = TRUE) %>% slice(1L) %>% rename(last_race_date = date) %>% mutate(last_race_date = ymd(last_race_date))
   
   #Determine new names to be added and construct df
   new_names <- anti_join(results, roster, by="rider_name") %>% 
@@ -202,6 +207,15 @@ new_name_check <-function(write_files)
   
   if (nrow(new_names) == 0) {
     print("No new names")
+    
+    if (write_files == TRUE) {
+      #Create New Roster
+      ctta_roster <- full_join(roster, first_race_date, by = "rider_name" ) %>% full_join(., last_race_date, by = "rider_name" )
+      
+      #Save Files
+      saveRDS(ctta_roster, file = here("data/ctta_roster.RDS"))
+      write_csv(ctta_roster, file = here("data/ctta_roster.csv") )
+    }
     return(NULL)
   }
   
@@ -212,14 +226,17 @@ new_name_check <-function(write_files)
   #Add gender to new name roster and reintegrate into the entire roster
   new_names_roster <- new_names %>% mutate(gender = gender_list$gender)
   print(new_names_roster)
+  
   #write files
   if (write_files == TRUE) {
     #Create New Roster
     ctta_roster_updated <- full_join(new_names_roster ,  roster)
+    ctta_roster_updated <- full_join(ctta_roster_updated, first_race_date, by = "rider_name" ) %>% full_join(., last_race_date, by = "rider_name" )
+    
     #Save Files
     saveRDS(ctta_roster_updated, file = here("data/ctta_roster.RDS"))
     write_csv(ctta_roster_updated, file = here("data/ctta_roster.csv") )
-  }
+    }
   return(new_names_roster)
   }
 }
@@ -346,36 +363,40 @@ i_am("data_processor.R")
 new_riders_roster <- new_name_check(write_files = FALSE)
 
 #Read in results and roster file, process data, and save to RDS files for shiny app.
-ctta_results <- read_xlsx(here("data", "tt_results_master.xlsx")) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+ctta_results <- read_xlsx(here("data", "tt_results_master.xlsx"), guess_max = 100000) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+ctta_roster <- read_csv(here("data" , "ctta_roster.csv"))
 
-                #ctta_roster <- read_csv(here("data", "ctta_roster.csv")) 
-                #%>% mutate(date_added_to_roster = dmy(date_added_to_roster)) #only required if the dates need to be reformated from text dmy
-                #write_csv(ctta_roster, file = here("data/ctta_roster.csv") )
-                #saveRDS(ctta_roster, file = here("data/ctta_roster.RDS"))
-
-ctta_roster <- readRDS("data/ctta_roster.RDS") 
-
-
+#Process tt_results into single table for shiny page
 tt_results <- process_raw_tt_data(results = ctta_results , roster = ctta_roster )
+tt_results <- add_age_group(tt_results)
 
-#Read in weathers file, process data, and save to RDS files for shiny app.
+#Read in weather file, process data, and save to RDS files for shiny app.
 tt_weather <- readr::read_csv(here("data","tai_tapu_weather2010-2022.csv")) #%>% dplyr::mutate(date = dmy(date))
-
 tt_weather <- weather_update(tt_results, tt_weather) %>% full_join(tt_weather, . , c("date", "tair_c", "rh_percent", "dir_deg_t", "speed_km_hr", "pressure", "density", "wd_cardinal") )
-
 write.csv(tt_weather, file = here("data/tai_tapu_weather2010-2022.csv"), row.names = FALSE)
 
-#write files to TT Analysis Directory
+#write binary files to TT Analysis Directory
 saveRDS(tt_weather, file = here("data/tai_tapu_weather2010-2022.RDS"))
 saveRDS(tt_results, file = here("data/tt_results.RDS"))
 
 #----HOME-------
-#write files to shiny app directory when home
+#write binary files to shiny app directory when home
 saveRDS(tt_results, file = here("C:/Users/yance/OneDrive - Allied Motion Technologies Inc/Desktop/R and BI Projects/CTTA Shiny App/data/tt_results.RDS"))
 saveRDS(tt_weather, file = here("C:/Users/yance/OneDrive - Allied Motion Technologies Inc/Desktop/R and BI Projects/CTTA Shiny App/data/tai_tapu_weather2010-2022.RDS"))
 
 #------WORK--------
-#write files to shiny app directory when at work
+#write binary files to shiny app directory when at work
 saveRDS(tt_results, file = here("C:/Users/Yancey.Arrington/OneDrive - Allied Motion Technologies Inc/Desktop/R and BI Projects/CTTA Shiny App/data/tt_results.RDS"))
 saveRDS(tt_weather, file = here("C:/Users/Yancey.Arrington/OneDrive - Allied Motion Technologies Inc/Desktop/R and BI Projects/CTTA Shiny App/data/tai_tapu_weather2010-2022.RDS"))
+
+
+
+#----------Trash code---------------
+#ctta_roster <- read_csv(here("data", "ctta_roster.csv")) 
+#%>% mutate(date_added_to_roster = dmy(date_added_to_roster)) #only required if the dates need to be reformated from text dmy
+#write_csv(ctta_roster, file = here("data/ctta_roster.csv") )
+#saveRDS(ctta_roster, file = here("data/ctta_roster.RDS"))
+
+
+
 

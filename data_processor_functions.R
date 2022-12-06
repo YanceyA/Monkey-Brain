@@ -1,0 +1,339 @@
+#function to calcualte the speed based from distance and time vector
+speed_fxn <- function(dist, time)
+{
+  as_hour <- lubridate::hour(time)+lubridate::minute(time)/60+lubridate::second(time)/3600
+  
+  speed_kph <- dist / as_hour 
+  
+  return(speed_kph)
+}
+
+#Function to apply the appropriate Season title to each record
+#needs to be updated each year
+season_fxn <- function(results)
+{
+  results_seasoned <- results %>%
+    dplyr::mutate(season = 
+                    case_when(date >= ymd("2010-6-01") & date < ymd("2011-6-01") ~ "2010-11 Season",
+                              date >= ymd("2011-6-01") & date < ymd("2012-6-01") ~ "2011-12 Season",
+                              date >= ymd("2012-6-01") & date < ymd("2013-6-01") ~ "2012-13 Season",
+                              date >= ymd("2013-6-01") & date < ymd("2014-6-01") ~ "2013-14 Season",
+                              date >= ymd("2014-6-01") & date < ymd("2015-6-01") ~ "2014-15 Season",
+                              date >= ymd("2015-6-01") & date < ymd("2016-6-01") ~ "2015-16 Season",
+                              date >= ymd("2016-6-01") & date < ymd("2017-6-01") ~ "2016-17 Season",
+                              date >= ymd("2017-6-01") & date < ymd("2018-6-01") ~ "2017-18 Season",
+                              date >= ymd("2018-6-01") & date < ymd("2019-6-01") ~ "2018-19 Season",
+                              date >= ymd("2019-6-01") & date < ymd("2020-6-01") ~ "2019-20 Season",
+                              date >= ymd("2020-6-01") & date < ymd("2021-6-01") ~ "2020-21 Season",
+                              date >= ymd("2021-6-01") & date < ymd("2022-6-01") ~ "2021-22 Season",
+                              date >= ymd("2022-6-01") & date < ymd("2023-6-01") ~ "2022-23 Season",
+                              TRUE ~ "out_of_range"))
+  return(results_seasoned)
+}
+
+#Detailed air density function based on temp, humidity and pressure
+air_density <- function(temp_C, rel_humidity, pressure)
+{
+  
+  # T_C <- temp_C
+  # T_K <- T_C + 273.15  #kelvins
+  # RH <- rel_humidity
+  # p <- pressure
+  
+  pv <- (6.1078 * 10^(  (7.5 * temp_C) / (T + 237.3) ) )* rel_humidity
+  pd <- pressure - pv
+  
+  density <- 100  * ((pd / (287.0531 * (temp_C + 273.15))) + (pv / (461.4964 * (temp_C + 273.15))) ) %>% 
+    round(digits = 5)
+  
+  return(density)
+  
+}
+
+#Air density quick calc
+air_density(18,.85,1020)
+
+#Process the TT Results Master File and Roster into combined file.
+process_raw_tt_data <- function(results , roster) 
+{
+  #Convert seconds column to time object and overwrite time column
+  results$time <- hms::as_hms(results$time_sec)
+  
+  results$time <- round_hms(hms::as_hms(results$time), digits = 1)
+  
+  #calculate speeds if speed = 0 , i.e. speed was not recorded in source data
+  results <- results %>% 
+    dplyr::mutate(speed = case_when(speed_bit == 0 ~ speed_fxn(dist_km , time),
+                                    TRUE ~ speed))
+  
+  #split and remerge data to add positions
+  results_pos_1 <- results %>% 
+    dplyr::filter(position_bit == 1) 
+  
+  results_pos_0 <- results %>%
+    dplyr::filter(position_bit == 0) %>% 
+    dplyr::arrange(date, dist_km, desc(speed)) %>% 
+    dplyr::group_by(date, dist_km, event) %>% 
+    dplyr::mutate(position =  1:n()) %>% 
+    dplyr::ungroup() 
+  
+  results <- full_join(results_pos_1, results_pos_0) %>% 
+    mutate(speed = round(speed, digits = 1))
+  
+  #remove intermediate dataframes
+  rm(results_pos_0 , results_pos_1 )
+  
+  #Add season to data
+  results <- season_fxn(results)
+  
+  #add gender and age group to results, taken from roster
+  results <- left_join(results, roster, by= "rider_name") %>% dplyr::mutate( rider_name_abbv = paste0(rider_name_first," ",str_sub(rider_name_last , 1 , 1),".") ) %>% mutate(date = as_date(date))
+  
+  #Determine min/max year for file naming
+  min_year <-  min(lubridate::year(results$date))
+  max_year <-  max(lubridate::year(results$date))
+  
+  #Write Data to CSV for Shiny program
+  write_csv(results, here("Data", paste0("ctta_results_",min_year,"-",max_year,".csv")))
+  
+  return(results)
+}
+
+#####Name Match code deactivated, for parsing name misspellings
+
+#Function for string distance matching for similar names comparison
+#match_level = 1 strict (1char diff) / 5 loose. 2-3 best setting 
+name_match <- function(name_list, match_level)
+{
+  
+  a <- unique(unlist(name_list)) 
+  
+  b = c(NA) 
+  
+  df = data.frame(a,b, stringsAsFactors = FALSE)
+  
+  mat <- stringdistmatrix(df$a, df$a)
+  
+  mat[mat==0] <- NA # ignore self
+  
+  mat[mat>match_level] <- NA  # cut level
+  
+  amatch <- rowSums(mat, na.rm = TRUE)>0 # ignore no match
+  
+  df$b[amatch] <- df$a[apply(mat[amatch,],1,which.min)]
+  
+  return(df)
+  
+}
+
+#String distance matching for similar names comparison---------------
+# match_level <- 2
+# matched_names <- name_match(ctta_results$rider_name, match_level) %>%  filter(!is.na(b)) %>% arrange(a)
+# write.csv(matched_names, here("Data/Misc", paste0("matched_names_level_",match_level,".csv")))
+
+add_age_group <- function(results)
+{
+  #requires results with column year_of_birth 
+  
+  results_with_age_group <- results %>% 
+    dplyr::mutate(age_group = 
+                    case_when(year(date) - year(ymd(year_of_birth, truncated = 2L)) < 15 ~ "U15",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 14 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 17 ~ "U17",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 16 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 19 ~ "U19",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 18 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 23 ~ "U23",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 22 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 35 ~ "Elite-Senior",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 34 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 40 ~ "Masters 1",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 39 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 45 ~ "Masters 2",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 44 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 50 ~ "Masters 3",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 49 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 55 ~ "Masters 4",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 54 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 60 ~ "Masters 5",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 59 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 65 ~ "Masters 6",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 64 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 70 ~ "Masters 7",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 69 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 75 ~ "Masters 8",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 74 & year(date) - year(ymd(year_of_birth, truncated = 2L)) < 80 ~ "Masters 9",
+                              year(date) - year(ymd(year_of_birth, truncated = 2L)) > 79  ~ "Masters 10",
+                              TRUE ~ "AG_unknown"))
+  
+  return(results_with_age_group)
+}
+
+new_name_check <-function(write_files)
+{
+  library(readxl)
+  library(readr)
+  library(magrittr)
+  library(janitor)
+  library(here)
+  library(dplyr)
+  library(stringr)
+  library(lubridate)
+  library(gender)
+  library(tibble)
+  library(tidyr)
+  
+  results <- read_xlsx(here("Data", "tt_results_master.xlsx"), guess_max = 100000) %>% clean_names() %>% remove_empty(which = c("rows", "cols"))
+  roster <- read_csv(here("Data", "ctta_roster.csv"), col_types = cols()) %>% 
+    mutate(date_added_to_roster = ymd(parse_date_time(date_added_to_roster, c("dmy", "ymd")))) %>% 
+    select(-c(last_race_date, first_race_date ))
+  
+  first_race_date <- results %>% select(rider_name, date) %>% group_by(rider_name) %>% dplyr::arrange(date, .by_group = TRUE) %>% slice(1L) %>% rename(first_race_date = date) %>% mutate(first_race_date = ymd(first_race_date))
+  last_race_date <- results %>% select(rider_name, date) %>% group_by(rider_name) %>% dplyr::arrange(desc(date), .by_group = TRUE) %>% slice(1L) %>% rename(last_race_date = date) %>% mutate(last_race_date = ymd(last_race_date))
+  
+  #Determine new names to be added and construct df
+  new_names <- anti_join(results, roster, by="rider_name") %>% 
+    select(rider_name) %>% 
+    unique() %>% 
+    separate(rider_name, c("rider_name_first", "rider_name_last"), sep = " ", remove=FALSE, extra = "merge") %>%                   
+    mutate(date_added_to_roster = Sys.Date())
+  
+  if (nrow(new_names) == 0) {
+    print("No new names")
+    
+    if (write_files == TRUE) {
+      #Create New Roster
+      ctta_roster <- full_join(roster, first_race_date, by = "rider_name" ) %>% full_join(., last_race_date, by = "rider_name" )
+      
+      #Save Files
+      saveRDS(ctta_roster, file = here("data/ctta_roster.RDS"))
+      write_csv(ctta_roster, file = here("data/ctta_roster.csv") )
+    }
+    return(NULL)
+  }
+  
+  else{
+    #create gender guess matrix
+    gender_list <- gender(new_names$rider_name_first, method = "genderize") %>% select(gender)
+    
+    #Add gender to new name roster and reintegrate into the entire roster
+    new_names_roster <- new_names %>% mutate(gender = gender_list$gender)
+    print(new_names_roster)
+    
+    #write files
+    if (write_files == TRUE) {
+      #Create New Roster
+      ctta_roster_updated <- full_join(new_names_roster ,  roster)
+      ctta_roster_updated <- full_join(ctta_roster_updated, first_race_date, by = "rider_name" ) %>% full_join(., last_race_date, by = "rider_name" )
+      
+      #Save Files
+      saveRDS(ctta_roster_updated, file = here("data/ctta_roster.RDS"))
+      write_csv(ctta_roster_updated, file = here("data/ctta_roster.csv") )
+    }
+    return(new_names_roster)
+  }
+}
+
+weather_update <- function(fxn_results, fxn_weather)
+{
+  #DMY date
+  #fxn_weather$date <- dmy(fxn_weather$date)
+  
+  
+  #fxn_results <- tt_results
+  #fxn_weather <- tt_weather
+  
+  
+  source("crypt.R")
+  
+  missing_weather_date <- fxn_results %>% 
+    dplyr::filter(location == "Tai Tapu") %>% 
+    select(date) %>% 
+    unique() %>% 
+    dplyr::filter(!date %in% fxn_weather$date) 
+  
+  #convert date into string in order to construct the cflio arguments
+  missing_weather_date <- format(missing_weather_date$date, "%Y-%m-%d")
+  
+  #create dataframe blank
+  clifo_weather <- slice(fxn_weather, 0)
+  #clifo user credentials
+  load("cflio_key.RData")
+  cflio_creds <- read.aes(filename = "cflio_creds.txt", key = key)
+  yancey_user <- cf_user(username = cflio_creds$username, password = cflio_creds$password)
+  rm(cflio_creds)
+  rm(key)
+  
+  #setting data types to request by column: surface wind, std observations, and pressure
+  wind_temp_humidity <- cf_datatype(c(2, 4, 7),
+                                    c(1, 1, 1),
+                                    list(2, 1, 1),
+                                    c(2, NA, NA))
+  
+  #station request
+  lincoln_broadfield_Ews <- cf_station(17603)
+  start_time <- "18"  #5pm
+  end_time <- "19"    #7pm
+  
+  #Create Cardinal wind direction variables
+  rose_breaks <- c(0, 360/16, (1/16 + (1:7 / 8)) * 360, 360)
+  rose_labs <- c(
+    "North", "Northeast",
+    "East", "Southeast", 
+    "South",  "Southwest", 
+    "West",  "Northwest",
+    "North")
+  
+  
+  if(length(missing_weather_date) == 0) {print("No missing weather dates")
+    return(clifo_weather)
+  }
+  
+  else{
+    for (n in 1:length(missing_weather_date)) {
+      #construct start date in loop
+      
+      start_date = str_c(missing_weather_date[n], start_time, sep = " ")
+      end_date = str_c(missing_weather_date[n], end_time, sep = " ") 
+      
+      #clifo weather query
+      print( paste0("Date: ",missing_weather_date[n]))
+      weather_query <- cf_query(user = yancey_user,
+                                datatype = wind_temp_humidity,
+                                station = lincoln_broadfield_Ews,
+                                start_date ,
+                                end_date )
+      #If loop if the 3 requested data frames are returned
+      if(length(weather_query) == 3 ){
+        weather_record <- full_join(as_tibble(weather_query[[1]]), as_tibble(weather_query[[2]]) , c("Station", "Date(local)") ) %>% 
+          full_join(., as_tibble(weather_query[[3]]), c("Station", "Date(local)")) %>% 
+          select("Dir(DegT)", "Speed(km/hr)", "Tair(C)", "RH(%)", "Pmsl(hPa)") %>% 
+          dplyr::rename(
+            tair_c = "Tair(C)",
+            rh_percent = "RH(%)",
+            dir_deg_t = "Dir(DegT)",
+            speed_km_hr = "Speed(km/hr)",
+            pressure = "Pmsl(hPa)" ) %>% 
+          dplyr::summarize(
+            tair_c = mean(tair_c),
+            rh_percent = mean(rh_percent),
+            dir_deg_t = mean(dir_deg_t),
+            speed_km_hr = mean(speed_km_hr),
+            pressure = mean(pressure)) %>% 
+          mutate(across(everything(), round, 0))
+        
+        weather_record$density = air_density(weather_record$tair_c , weather_record$rh_percent/100, weather_record$pressure) 
+        
+        weather_record$date = as_date(missing_weather_date[n])
+        
+        weather_record <- weather_record %>% 
+          mutate(wd_cardinal = cut(
+            dir_deg_t, 
+            breaks = rose_breaks, 
+            labels = rose_labs))
+        
+        clifo_weather <- rbind(clifo_weather, weather_record)
+        
+        print("New Weather Added")
+        print(tail(clifo_weather, n = length(missing_weather_date)))
+        
+      }
+      if (length(weather_query) == 2) {
+        print( paste0("Date: ",missing_weather_date))
+        print( paste0("Error: Only 2 dataframes, ", my_query[[1]]@dt_name, " and " , my_query[[2]]@dt_name, " returned"))
+      }
+      if (length(weather_query) == 1) {
+        print( paste0("Date: ",missing_weather_date[n]))
+        print( paste0("Error: Only 1 dataframe, ", my_query[[1]]@dt_name, " returned"))
+      }
+    }
+    return(clifo_weather)}
+}
